@@ -1,0 +1,463 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0212EB21A9F4DBB1B88EE39D /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4AFF84527D5758C56A11C58 /* LoginView.swift */; };
+		1F115A0E7A627A43186448A4 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21F036E615A68F69BD52FCD /* RootView.swift */; };
+		3183505441B12CBDEF0FB51C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7BA31225B45BC2195EA1A1CF /* Assets.xcassets */; };
+		3B14AA74713CD00652F58D3F /* Privacy.html in Resources */ = {isa = PBXBuildFile; fileRef = EA4FF070ABE25B360A297E05 /* Privacy.html */; };
+		4AD159AE1EB291A26F7E6E32 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81E4F44A6F4747AC373C75F5 /* Models.swift */; };
+		50D558A542D37A1EFE866AF4 /* LegalDocumentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43216E3E00F33AE92A9CA246 /* LegalDocumentView.swift */; };
+		5B7916612B1AD705DB0F7431 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 81048EB1C3395CF28A288F9A /* GoogleMobileAds */; };
+		5E98457623F66D944BDDA3CE /* TripDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CF659EAC1B3A658E4A38EE5 /* TripDetail.swift */; };
+		6E3DEA321E415E3D4F7C8AA2 /* PortalBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F7A32ECF0312CB2A037B305 /* PortalBackend.swift */; };
+		70943FDB8E04E8DE26E6C5C6 /* SatchelApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 397E3B187B503A7ED80FA10D /* SatchelApp.swift */; };
+		8192BCC745B8995E1577930B /* MembershipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8C0B0E0BB120EA58F50CC0 /* MembershipView.swift */; };
+		96F2C6C754309A545932C30C /* Design.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CCB457CE62D990395E90913 /* Design.swift */; };
+		9B4AD0FCD42C61F01300A3E2 /* TravelExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ACD2A4E47F7B43B578FF281 /* TravelExport.swift */; };
+		AD332773DE25F230991C3897 /* MembershipStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39804533D79C2520FFA415F4 /* MembershipStore.swift */; };
+		CBCDBFCECCB7263E9CDE6498 /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = 300E2A60D6FCED5C8724FA15 /* GoogleUserMessagingPlatform */; };
+		CD84314905E1745B86DB2F9C /* RewardedAds.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD374F6181BB0C83556C60A /* RewardedAds.swift */; };
+		D812B4628EC410936837E8A2 /* L10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95C61CEB106A39858AE26E3E /* L10n.swift */; };
+		D9557296E49DF5E8AC0EDB31 /* Editors.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9DC05409FB8E87E3CD2191A /* Editors.swift */; };
+		E341A2E62E83C5C3178E6E67 /* Terms.html in Resources */ = {isa = PBXBuildFile; fileRef = 610AE1BC43CEF7141FF0B7A8 /* Terms.html */; };
+		F62C190EE686C6D5754CBF34 /* PortalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E30FFC3F829DEEE6F8DF926 /* PortalView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		2CF659EAC1B3A658E4A38EE5 /* TripDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripDetail.swift; sourceTree = "<group>"; };
+		397E3B187B503A7ED80FA10D /* SatchelApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatchelApp.swift; sourceTree = "<group>"; };
+		39804533D79C2520FFA415F4 /* MembershipStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MembershipStore.swift; sourceTree = "<group>"; };
+		43216E3E00F33AE92A9CA246 /* LegalDocumentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegalDocumentView.swift; sourceTree = "<group>"; };
+		5CCB457CE62D990395E90913 /* Design.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Design.swift; sourceTree = "<group>"; };
+		610AE1BC43CEF7141FF0B7A8 /* Terms.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = Terms.html; sourceTree = "<group>"; };
+		6C8C0B0E0BB120EA58F50CC0 /* MembershipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MembershipView.swift; sourceTree = "<group>"; };
+		6F7A32ECF0312CB2A037B305 /* PortalBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalBackend.swift; sourceTree = "<group>"; };
+		7BA31225B45BC2195EA1A1CF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		81E4F44A6F4747AC373C75F5 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		95C61CEB106A39858AE26E3E /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
+		9ACD2A4E47F7B43B578FF281 /* TravelExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TravelExport.swift; sourceTree = "<group>"; };
+		9E30FFC3F829DEEE6F8DF926 /* PortalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalView.swift; sourceTree = "<group>"; };
+		B21F036E615A68F69BD52FCD /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		B9DC05409FB8E87E3CD2191A /* Editors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Editors.swift; sourceTree = "<group>"; };
+		C4AFF84527D5758C56A11C58 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		CAD374F6181BB0C83556C60A /* RewardedAds.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardedAds.swift; sourceTree = "<group>"; };
+		D15894C1656553DFFFC06133 /* Satchel.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Satchel.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		EA4FF070ABE25B360A297E05 /* Privacy.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = Privacy.html; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		93CC692E53461406EF1E1E6B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5B7916612B1AD705DB0F7431 /* GoogleMobileAds in Frameworks */,
+				CBCDBFCECCB7263E9CDE6498 /* GoogleUserMessagingPlatform in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		12C77BCB8F3DA1B0E08F40DA /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D15894C1656553DFFFC06133 /* Satchel.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		3CFC4DD6F68754F8CF3E26ED /* Satchel */ = {
+			isa = PBXGroup;
+			children = (
+				7BA31225B45BC2195EA1A1CF /* Assets.xcassets */,
+				97EDD5EEA1DAFA68564575CD /* Resources */,
+				507E9FABFA16FD7A8EF60435 /* Sources */,
+			);
+			path = Satchel;
+			sourceTree = "<group>";
+		};
+		507E9FABFA16FD7A8EF60435 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				5CCB457CE62D990395E90913 /* Design.swift */,
+				B9DC05409FB8E87E3CD2191A /* Editors.swift */,
+				95C61CEB106A39858AE26E3E /* L10n.swift */,
+				43216E3E00F33AE92A9CA246 /* LegalDocumentView.swift */,
+				C4AFF84527D5758C56A11C58 /* LoginView.swift */,
+				6C8C0B0E0BB120EA58F50CC0 /* MembershipView.swift */,
+				81E4F44A6F4747AC373C75F5 /* Models.swift */,
+				B21F036E615A68F69BD52FCD /* RootView.swift */,
+				397E3B187B503A7ED80FA10D /* SatchelApp.swift */,
+				2CF659EAC1B3A658E4A38EE5 /* TripDetail.swift */,
+				FBAD46369FB8C311332BF129 /* Portal */,
+				BE995E702EAB52BC44819035 /* Services */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		97EDD5EEA1DAFA68564575CD /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				EA4FF070ABE25B360A297E05 /* Privacy.html */,
+				610AE1BC43CEF7141FF0B7A8 /* Terms.html */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		BE995E702EAB52BC44819035 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				39804533D79C2520FFA415F4 /* MembershipStore.swift */,
+				6F7A32ECF0312CB2A037B305 /* PortalBackend.swift */,
+				CAD374F6181BB0C83556C60A /* RewardedAds.swift */,
+				9ACD2A4E47F7B43B578FF281 /* TravelExport.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		C945CC80CEAD50BD2F7981A3 = {
+			isa = PBXGroup;
+			children = (
+				3CFC4DD6F68754F8CF3E26ED /* Satchel */,
+				12C77BCB8F3DA1B0E08F40DA /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		FBAD46369FB8C311332BF129 /* Portal */ = {
+			isa = PBXGroup;
+			children = (
+				9E30FFC3F829DEEE6F8DF926 /* PortalView.swift */,
+			);
+			path = Portal;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		972F1CBF16FF82353A4DD1C6 /* Satchel */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 426F08D5C9A1DD3C79BF3DB3 /* Build configuration list for PBXNativeTarget "Satchel" */;
+			buildPhases = (
+				28425DFD22A2E995C268E1C5 /* Sources */,
+				CD09F02C49B1C2DC4E769A24 /* Resources */,
+				93CC692E53461406EF1E1E6B /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Satchel;
+			packageProductDependencies = (
+				81048EB1C3395CF28A288F9A /* GoogleMobileAds */,
+				300E2A60D6FCED5C8724FA15 /* GoogleUserMessagingPlatform */,
+			);
+			productName = Satchel;
+			productReference = D15894C1656553DFFFC06133 /* Satchel.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0626769CC266688E423182FD /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					972F1CBF16FF82353A4DD1C6 = {
+						DevelopmentTeam = "";
+					};
+				};
+			};
+			buildConfigurationList = D0C361E2EF1E68663840EE87 /* Build configuration list for PBXProject "Satchel" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = C945CC80CEAD50BD2F7981A3;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				B6D150BCA28779ED0ADCACDF /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+				7B10AE1DF16B620B5B04CFE2 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */,
+			);
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				972F1CBF16FF82353A4DD1C6 /* Satchel */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		CD09F02C49B1C2DC4E769A24 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3183505441B12CBDEF0FB51C /* Assets.xcassets in Resources */,
+				3B14AA74713CD00652F58D3F /* Privacy.html in Resources */,
+				E341A2E62E83C5C3178E6E67 /* Terms.html in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		28425DFD22A2E995C268E1C5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				96F2C6C754309A545932C30C /* Design.swift in Sources */,
+				D9557296E49DF5E8AC0EDB31 /* Editors.swift in Sources */,
+				D812B4628EC410936837E8A2 /* L10n.swift in Sources */,
+				50D558A542D37A1EFE866AF4 /* LegalDocumentView.swift in Sources */,
+				0212EB21A9F4DBB1B88EE39D /* LoginView.swift in Sources */,
+				AD332773DE25F230991C3897 /* MembershipStore.swift in Sources */,
+				8192BCC745B8995E1577930B /* MembershipView.swift in Sources */,
+				4AD159AE1EB291A26F7E6E32 /* Models.swift in Sources */,
+				6E3DEA321E415E3D4F7C8AA2 /* PortalBackend.swift in Sources */,
+				F62C190EE686C6D5754CBF34 /* PortalView.swift in Sources */,
+				CD84314905E1745B86DB2F9C /* RewardedAds.swift in Sources */,
+				1F115A0E7A627A43186448A4 /* RootView.swift in Sources */,
+				70943FDB8E04E8DE26E6C5C6 /* SatchelApp.swift in Sources */,
+				9B4AD0FCD42C61F01300A3E2 /* TravelExport.swift in Sources */,
+				5E98457623F66D944BDDA3CE /* TripDetail.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		115438B33839965B05B21854 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.satchel.traveljournal;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		1C7274EAC4EF71131B3D23A9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Satchel/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Satchel;
+				INFOPLIST_KEY_GADApplicationIdentifier = "ca-app-pub-3940256099942544~1458002511";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Satchel uses the camera to add photos to your travel journal and packing notes.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		3A414E37DAFD830485177454 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.satchel.traveljournal;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		7B1768B34D139C2B90D7779A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Satchel/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Satchel;
+				INFOPLIST_KEY_GADApplicationIdentifier = "ca-app-pub-3940256099942544~1458002511";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Satchel uses the camera to add photos to your travel journal and packing notes.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		426F08D5C9A1DD3C79BF3DB3 /* Build configuration list for PBXNativeTarget "Satchel" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1C7274EAC4EF71131B3D23A9 /* Debug */,
+				7B1768B34D139C2B90D7779A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D0C361E2EF1E68663840EE87 /* Build configuration list for PBXProject "Satchel" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				115438B33839965B05B21854 /* Debug */,
+				3A414E37DAFD830485177454 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		7B10AE1DF16B620B5B04CFE2 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git";
+			requirement = {
+				kind = exactVersion;
+				version = 3.1.0;
+			};
+		};
+		B6D150BCA28779ED0ADCACDF /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = exactVersion;
+				version = 13.11.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		300E2A60D6FCED5C8724FA15 /* GoogleUserMessagingPlatform */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7B10AE1DF16B620B5B04CFE2 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */;
+			productName = GoogleUserMessagingPlatform;
+		};
+		81048EB1C3395CF28A288F9A /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B6D150BCA28779ED0ADCACDF /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 0626769CC266688E423182FD /* Project object */;
+}

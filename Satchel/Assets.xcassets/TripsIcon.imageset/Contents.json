@@ -1,0 +1,12 @@
+{
+  "images": [
+    {
+      "filename": "TripsIcon.png",
+      "idiom": "universal"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  }
+}
