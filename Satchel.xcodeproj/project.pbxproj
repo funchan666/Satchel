@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -47,7 +47,7 @@
 		B9DC05409FB8E87E3CD2191A /* Editors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Editors.swift; sourceTree = "<group>"; };
 		C4AFF84527D5758C56A11C58 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		CAD374F6181BB0C83556C60A /* RewardedAds.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardedAds.swift; sourceTree = "<group>"; };
-		D15894C1656553DFFFC06133 /* Satchel.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Satchel.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D15894C1656553DFFFC06133 /* Satchel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Satchel.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EA4FF070ABE25B360A297E05 /* Privacy.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = Privacy.html; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -169,11 +169,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
-				TargetAttributes = {
-					972F1CBF16FF82353A4DD1C6 = {
-						DevelopmentTeam = "";
-					};
-				};
 			};
 			buildConfigurationList = D0C361E2EF1E68663840EE87 /* Build configuration list for PBXProject "Satchel" */;
 			compatibilityVersion = "Xcode 14.0";
@@ -189,7 +184,6 @@
 				B6D150BCA28779ED0ADCACDF /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
 				7B10AE1DF16B620B5B04CFE2 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */,
 			);
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -308,6 +302,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Satchel/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Satchel;
@@ -319,8 +315,13 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -388,6 +389,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Satchel/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Satchel;
@@ -399,8 +402,13 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};

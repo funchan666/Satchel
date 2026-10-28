@@ -1,0 +1,5 @@
+# Satchel App Icon — 2026-10-28
+
+Generated with the host-native image-generation tool. The project icon is a 1024 × 1024 opaque RGB resize of the original; the prior project icon is preserved alongside it.
+
+Prompt: Create a new original iOS app icon for Satchel, a premium warm travel-journal app. Square image filled edge-to-edge: uniform warm creamy ivory background. One single striking, centered travel-journal emblem: a gently angled terracotta red passport-sized notebook with a curved cream paper page that contains a simple abstract cobalt-blue sea and tiny orange sun like a miniature postcard tucked into the notebook. Modern refined cut-paper craft, clean sculptural forms, warm and expressive, minimal elements, sophisticated and easy to recognize at 60 pixels. Limited color palette of terracotta, Mediterranean blue and cream with tiny olive accent. Clear thick visual forms, carefully balanced optical spacing. No leather bags, no words, no letters, no ornament clutter, no border, no rounded-square outline, no phone frame, no watermark.
