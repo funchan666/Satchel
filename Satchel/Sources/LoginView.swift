@@ -78,10 +78,6 @@ struct LoginView: View {
             if let error = backend.error {
                 Text(l.text(error)).font(.footnote).foregroundColor(Palette.rust)
             }
-            Text(l.text("Sign-in sends your network address and a device identifier to the service provider."))
-                .font(.footnote)
-                .foregroundColor(Palette.muted)
-                .fixedSize(horizontal: false, vertical: true)
         }
         .foregroundColor(Palette.ink)
         .padding(20)
