@@ -37,14 +37,16 @@ struct TripDetail: View {
                             VStack(alignment: .leading, spacing: 5) {
                                 Text(trip.destination).font(.system(size: 30, design: .serif))
                                 Text(trip.start.formatted(date: .abbreviated, time: .omitted) + " — " + trip.end.formatted(date: .abbreviated, time: .omitted)).font(.subheadline)
-                            }.padding(14).background(Palette.cream.opacity(0.95), in: RoundedRectangle(cornerRadius: 12)).padding(14)
+                            }.padding(14).modifier(SatchelGlass(tint: Palette.paper.opacity(0.22), cornerRadius: 12)).padding(14)
                         }.clipShape(RoundedRectangle(cornerRadius: 18))
                         PhotoSelector(label: l.text("Change cover"), cameraLabel: l.text("Camera"), cameraError: l.text("Camera access is unavailable. Check your device settings.")) { data in
                             if let name = store.savePhoto(data), var updated = self.trip { let previous = updated.cover; updated.cover = name; if store.update(updated) { if let previous { store.removeUnusedPhotos([previous]) } } else { store.removeUnusedPhotos([name]) } }
                         }
-                        HStack {
-                            sectionButton("Packing", index: 0)
-                            sectionButton("Journal", index: 1)
+                        SatchelGlassGroup {
+                            HStack(spacing: 8) {
+                                sectionButton("Packing", index: 0)
+                                sectionButton("Journal", index: 1)
+                            }
                         }
                         if section == 0 { packing(trip) } else { journal(trip) }
                     }.padding(20).frame(maxWidth: 720)
@@ -59,17 +61,23 @@ struct TripDetail: View {
     }
     private func sectionButton(_ title: String, index: Int) -> some View {
         Button { if reduceMotion { section = index } else { withAnimation(.easeInOut(duration: 0.18)) { section = index } } } label: {
-            Text(l.text(title)).font(.headline).frame(maxWidth: .infinity).padding(.vertical, 14).foregroundColor(section == index ? .white : Palette.ink).background(section == index ? Palette.olive : Palette.cream, in: RoundedRectangle(cornerRadius: 12))
-        }.buttonStyle(.plain)
+            HStack(spacing: 6) {
+                if section == index { Image("CheckOn").resizable().scaledToFit().frame(width: 18, height: 18).accessibilityHidden(true) }
+                Text(l.text(title)).font(.headline)
+            }.frame(maxWidth: .infinity).padding(.vertical, 14).foregroundColor(Palette.ink)
+                .modifier(SatchelGlass(tint: section == index ? Palette.olive.opacity(0.28) : Palette.paper.opacity(0.12), interactive: true, cornerRadius: 12, fallback: section == index ? Color(red: 0.80, green: 0.83, blue: 0.75) : Palette.cream))
+        }.buttonStyle(.plain).accessibilityValue(section == index ? l.text("Selected") : l.text("Not selected"))
     }
     @ViewBuilder private func packing(_ trip: Trip) -> some View {
         let relevant = returning ? trip.items.filter(\.needsReturn) : trip.items
         let complete = relevant.filter { returning ? $0.returned : $0.packed }.count
         VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Button(l.text("Packing")) { returning = false }.buttonStyle(SecondaryButton()).opacity(returning ? 0.55 : 1)
-                Button(l.text("Returning")) { returning = true }.buttonStyle(SecondaryButton()).opacity(returning ? 1 : 0.55)
-                Spacer()
+            SatchelGlassGroup {
+                HStack(spacing: 8) {
+                    ChoiceButton(title: l.text("Packing"), selected: !returning, selectedLabel: l.text("Selected"), unselectedLabel: l.text("Not selected")) { returning = false }
+                    ChoiceButton(title: l.text("Returning"), selected: returning, selectedLabel: l.text("Selected"), unselectedLabel: l.text("Not selected")) { returning = true }
+                    Spacer(minLength: 0)
+                }
             }
             if !relevant.isEmpty { Text("\(complete) / \(relevant.count)").font(.system(size: 25, design: .serif)).foregroundColor(Palette.olive) }
             if trip.items.isEmpty {
@@ -112,7 +120,7 @@ struct TripDetail: View {
         VStack(alignment: .leading, spacing: 16) {
             HStack { Text(l.text("Journal")).font(.system(size: 24, design: .serif)); Spacer(); Button(l.text("Add a memory")) { editingEntry = nil; showEntry = true }.buttonStyle(PrimaryButton()) }
             if trip.entries.isEmpty {
-                Image("JournalEmpty").resizable().scaledToFit().frame(maxWidth: 230).frame(maxWidth: .infinity)
+                Image("JournalEmpty").resizable().scaledToFit().frame(maxWidth: 230).frame(maxWidth: .infinity).accessibilityHidden(true)
                 Text(l.text("Your memories start here.")).font(.system(size: 20, design: .serif))
             }
             let grouped = Dictionary(grouping: trip.entries) { Calendar.current.startOfDay(for: $0.date) }

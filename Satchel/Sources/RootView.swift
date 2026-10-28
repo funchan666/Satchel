@@ -25,7 +25,10 @@ struct RootView: View {
                             }.foregroundColor(tab == index ? Palette.rust : Palette.muted).frame(maxWidth: .infinity).frame(minHeight: 64).contentShape(Rectangle())
                         }.buttonStyle(.plain).accessibilityValue(tab == index ? l.text("Selected") : l.text("Not selected"))
                     }
-                }.background(Palette.cream)
+                }
+                .padding(.horizontal, 8)
+                .modifier(SatchelGlass(tint: Palette.paper.opacity(0.12), interactive: true, cornerRadius: 22))
+                .padding(.horizontal, 16).padding(.vertical, 8)
             }.modifier(Page())
             .toolbar(.hidden, for: .navigationBar)
             .sheet(isPresented: $creating) { NewTripView(l: l) }
@@ -61,8 +64,8 @@ struct TripsView: View {
     @ViewBuilder private func section(_ title: String, trips: [Trip]) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             Text(title).font(.system(size: 21, design: .serif))
-            ForEach(Array(trips.enumerated()), id: \.element.id) { index, trip in
-                NavigationLink { TripDetail(tripID: trip.id, l: l) } label: { TripCard(trip: trip, l: l, featured: index == 0) }.buttonStyle(.plain)
+            ForEach(trips) { trip in
+                NavigationLink { TripDetail(tripID: trip.id, l: l) } label: { TripCard(trip: trip, l: l, featured: trip.id == trips.first?.id) }.buttonStyle(.plain)
             }
         }
     }
@@ -111,9 +114,16 @@ struct SettingsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                EditorialTitle(title: l.text("Me"), subtitle: l.text("Your travel journal stays on this device."))
-                NavigationLink { MembershipView(l: l) } label: { Text(l.text("Satchel Membership")).frame(maxWidth: .infinity, alignment: .leading).padding(15).background(Palette.cream, in: RoundedRectangle(cornerRadius: 10)) }.buttonStyle(.plain)
-                NavigationLink { PortalEntry(l: l) } label: { Text(l.text("Online service")).frame(maxWidth: .infinity, alignment: .leading).padding(15).background(Palette.cream, in: RoundedRectangle(cornerRadius: 10)) }.buttonStyle(.plain)
+                HStack(alignment: .center, spacing: 12) {
+                    EditorialTitle(title: l.text("Me"), subtitle: l.text("Your travel journal stays on this device."))
+                    Image("SatchelIllustration").resizable().scaledToFit().frame(width: 88, height: 70).accessibilityHidden(true)
+                }
+                SatchelGlassGroup {
+                    VStack(spacing: 12) {
+                        NavigationLink { MembershipView(l: l) } label: { Text(l.text("Satchel Membership")).frame(maxWidth: .infinity, alignment: .leading).padding(15).modifier(SatchelGlass(tint: Palette.paper.opacity(0.12), interactive: true, cornerRadius: 12)) }.buttonStyle(.plain)
+                        NavigationLink { PortalEntry(l: l) } label: { Text(l.text("Online service")).frame(maxWidth: .infinity, alignment: .leading).padding(15).modifier(SatchelGlass(tint: Palette.paper.opacity(0.12), interactive: true, cornerRadius: 12)) }.buttonStyle(.plain)
+                    }
+                }
                 Button(l.text("Export your journal")) { do { exportFile = ExportFile(url: try store.export()) } catch { store.error = "Your journal could not be exported. Please try again." } }.buttonStyle(SecondaryButton())
                 NavigationLink { LegalDocumentView(document: .privacy, l: l) } label: { Text(l.text("Privacy policy")).frame(maxWidth: .infinity, alignment: .leading).padding(15).background(Palette.cream, in: RoundedRectangle(cornerRadius: 10)) }.buttonStyle(.plain)
                 NavigationLink { LegalDocumentView(document: .terms, l: l) } label: { Text(l.text("Terms of use")).frame(maxWidth: .infinity, alignment: .leading).padding(15).background(Palette.cream, in: RoundedRectangle(cornerRadius: 10)) }.buttonStyle(.plain)

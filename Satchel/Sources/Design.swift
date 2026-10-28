@@ -115,3 +115,68 @@ struct ErrorNotice: View {
         }
     }
 }
+
+struct ChoiceButton: View {
+    let title: String
+    let selected: Bool
+    let selectedLabel: String
+    let unselectedLabel: String
+    let action: () -> Void
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                if selected { Image("CheckOn").resizable().scaledToFit().frame(width: 18, height: 18).accessibilityHidden(true) }
+                Text(title).font(.system(size: 15, weight: selected ? .bold : .semibold))
+            }.foregroundColor(Palette.ink)
+                .padding(.horizontal, 16).padding(.vertical, 12)
+                .modifier(SatchelGlass(tint: selected ? Palette.olive.opacity(0.28) : Palette.paper.opacity(0.12), interactive: true, cornerRadius: 12, fallback: selected ? Color(red: 0.80, green: 0.83, blue: 0.75) : Palette.cream))
+        }.buttonStyle(.plain).accessibilityValue(selected ? selectedLabel : unselectedLabel)
+    }
+}
+
+/// Keeps Satchel's warm palette while using system Liquid Glass where available.
+struct SatchelGlass: ViewModifier {
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    var tint: Color? = nil
+    var interactive = false
+    var cornerRadius: CGFloat = 16
+    var fallback = Palette.cream
+
+    init(tint: Color? = nil, interactive: Bool = false, cornerRadius: CGFloat = 16, fallback: Color = Palette.cream) {
+        self.tint = tint; self.interactive = interactive; self.cornerRadius = cornerRadius; self.fallback = fallback
+    }
+
+    @ViewBuilder func body(content: Content) -> some View {
+        if reduceTransparency {
+            content.background(fallback, in: RoundedRectangle(cornerRadius: cornerRadius))
+        } else {
+            #if compiler(>=6.2)
+            if #available(iOS 26.0, *) {
+                content.glassEffect(.regular.tint(tint).interactive(interactive), in: .rect(cornerRadius: cornerRadius))
+                    .environment(\.colorScheme, .light)
+            } else {
+                content.background(.regularMaterial, in: RoundedRectangle(cornerRadius: cornerRadius))
+                    .background(fallback.opacity(0.55), in: RoundedRectangle(cornerRadius: cornerRadius))
+            }
+            #else
+            content.background(.regularMaterial, in: RoundedRectangle(cornerRadius: cornerRadius))
+                .background(fallback.opacity(0.55), in: RoundedRectangle(cornerRadius: cornerRadius))
+            #endif
+        }
+    }
+}
+
+struct SatchelGlassGroup<Content: View>: View {
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    private let content: Content
+    init(@ViewBuilder content: () -> Content) { self.content = content() }
+    var body: some View {
+        #if compiler(>=6.2)
+        if #available(iOS 26.0, *), !reduceTransparency {
+            GlassEffectContainer(spacing: 8) { content }
+        } else { content }
+        #else
+        content
+        #endif
+    }
+}

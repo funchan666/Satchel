@@ -57,11 +57,6 @@ struct Trip: Codable, Identifiable {
             if FileManager.default.fileExists(atPath: file.path) { trips = try JSONDecoder().decode([Trip].self, from: Data(contentsOf: file)) }
             let templateFile = base.appendingPathComponent("template.json")
             if FileManager.default.fileExists(atPath: templateFile.path) { template = try JSONDecoder().decode([PackingItem].self, from: Data(contentsOf: templateFile)) }
-            let saved = referencedPhotos(in: trips).union(template.compactMap(\.photo))
-            let files = try FileManager.default.contentsOfDirectory(atPath: base.path)
-            for name in files where name.hasSuffix(".jpg") && UUID(uuidString: String(name.dropLast(4))) != nil && !saved.contains(name) {
-                try? FileManager.default.removeItem(at: base.appendingPathComponent(name))
-            }
         } catch { canWrite = false; self.error = "Could not open your travel journal. Your existing data has not been replaced." }
     }
     func save(_ updated: [Trip]) -> Bool {

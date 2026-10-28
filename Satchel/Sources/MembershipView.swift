@@ -12,8 +12,11 @@ struct MembershipView: View {
                 Button(l.text("Me")) { dismiss() }.buttonStyle(SecondaryButton())
                 Image("MembershipArt").resizable().scaledToFit().frame(maxHeight: 160).frame(maxWidth: .infinity).accessibilityHidden(true)
                 EditorialTitle(title: l.text("Satchel Membership"), subtitle: l.text("More room for every journey."))
-                Text(l.text("Free: up to 3 trips and 30 photos. Membership: unlimited trips and photos."))
-                Text(l.text("Your saved trips remain available to view and export even if membership ends.")).foregroundColor(Palette.muted)
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(l.text("Free: up to 3 trips and 30 photos. Membership: unlimited trips and photos."))
+                    Text(l.text("Your saved trips remain available to view and export even if membership ends.")).foregroundColor(Palette.muted)
+                }.frame(maxWidth: .infinity, alignment: .leading).padding(16)
+                    .modifier(SatchelGlass(tint: Palette.paper.opacity(0.16), cornerRadius: 16))
                 if membership.isMember { Text(l.text("Your membership is active.")).foregroundColor(Palette.olive) }
                 ForEach(membership.products, id: \.id) { product in
                     VStack(alignment: .leading, spacing: 8) {

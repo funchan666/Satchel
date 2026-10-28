@@ -31,7 +31,8 @@ struct LoginView: View {
                             Button { document = .privacy } label: { Text(l.text("Privacy policy")).underline() }
                         }.font(.footnote.weight(.semibold)).foregroundColor(Palette.rust)
                     }.padding(.top, 5)
-                }
+                }.padding(10).frame(maxWidth: .infinity, alignment: .leading)
+                    .modifier(SatchelGlass(tint: Palette.paper.opacity(0.12), cornerRadius: 16))
                 if let error = backend.error { Text(l.text(error)).font(.footnote).foregroundColor(Palette.rust) }
                 Text(l.text("Sign-in sends your network address and a device identifier to the service provider.")).font(.footnote).foregroundColor(Palette.muted)
             }.padding(20).frame(maxWidth: 640).frame(maxWidth: .infinity)

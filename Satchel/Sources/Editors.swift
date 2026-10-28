@@ -30,10 +30,11 @@ struct NewTripView: View {
                     field(l.text("End date") + " · YYYY-MM-DD", text: $endText)
                     Text(l.text("Trip type")).font(.headline)
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack { ForEach(TravelKind.allCases, id: \.self) { value in
-                            Button(l.text(value.rawValue.capitalized)) { kind = value }.buttonStyle(SecondaryButton()).opacity(kind == value ? 1 : 0.55)
-                                .accessibilityValue(kind == value ? l.text("Selected") : l.text("Not selected"))
-                        } }
+                        SatchelGlassGroup {
+                            HStack(spacing: 8) { ForEach(TravelKind.allCases, id: \.self) { value in
+                                ChoiceButton(title: l.text(value.rawValue.capitalized), selected: kind == value, selectedLabel: l.text("Selected"), unselectedLabel: l.text("Not selected")) { kind = value }
+                            } }
+                        }
                     }
                     if !store.trips.isEmpty {
                         Text(l.text("Copy a previous list")).font(.headline)
@@ -99,7 +100,12 @@ struct ItemEditor: View {
                 }
                 input("Where is it?", $location); input("Notes", $notes)
                 Button { needsReturn.toggle() } label: { HStack { Text(l.text("Bring back")); Spacer(); Image(needsReturn ? "CheckOn" : "CheckOff").resizable().scaledToFit().frame(width: 28, height: 28).accessibilityHidden(true) } }.buttonStyle(SecondaryButton()).accessibilityValue(needsReturn ? l.text("Selected") : l.text("Not selected"))
-                PhotoSelector(label: l.text("Add photo"), cameraLabel: l.text("Camera"), cameraError: l.text("Camera access is unavailable. Check your device settings.")) { data in photo = store.savePhoto(data) }
+                PhotoSelector(label: l.text("Add photo"), cameraLabel: l.text("Camera"), cameraError: l.text("Camera access is unavailable. Check your device settings.")) { data in
+                    if let name = store.savePhoto(data) {
+                        if let old = photo { store.removeUnusedPhotos([old]) }
+                        photo = name
+                    }
+                }
                 if let image = store.image(photo) { Image(uiImage: image).resizable().scaledToFit().frame(maxHeight: 180).clipShape(RoundedRectangle(cornerRadius: 12)) }
                 if invalid { Text(l.text("Please enter a name and category.")).foregroundColor(Palette.rust).font(.footnote) }
                 HStack { Button(l.text("Cancel")) { if let photo { store.removeUnusedPhotos([photo]) }; dismiss() }.buttonStyle(SecondaryButton()); Button(l.text("Save")) { save() }.buttonStyle(PrimaryButton()) }
