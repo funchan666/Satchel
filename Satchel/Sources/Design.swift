@@ -13,7 +13,10 @@ enum Palette {
     static let cream = Color(red: 1, green: 0.985, blue: 0.95)
 }
 struct Page: ViewModifier {
-    func body(content: Content) -> some View { content.foregroundColor(Palette.ink).background(Palette.paper.ignoresSafeArea()) }
+    func body(content: Content) -> some View {
+        content.foregroundColor(Palette.ink)
+            .background(Palette.paper.ignoresSafeArea(.container))
+    }
 }
 struct PrimaryButton: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {

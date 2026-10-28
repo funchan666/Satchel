@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F2F147CC51D645A19E405A01 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F2F147CC51D645A19E405A02 /* LaunchScreen.storyboard */; };
 		0212EB21A9F4DBB1B88EE39D /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4AFF84527D5758C56A11C58 /* LoginView.swift */; };
 		1F115A0E7A627A43186448A4 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21F036E615A68F69BD52FCD /* RootView.swift */; };
 		3183505441B12CBDEF0FB51C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7BA31225B45BC2195EA1A1CF /* Assets.xcassets */; };
@@ -30,6 +31,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		F2F147CC51D645A19E405A02 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2CF659EAC1B3A658E4A38EE5 /* TripDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripDetail.swift; sourceTree = "<group>"; };
 		397E3B187B503A7ED80FA10D /* SatchelApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatchelApp.swift; sourceTree = "<group>"; };
 		39804533D79C2520FFA415F4 /* MembershipStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MembershipStore.swift; sourceTree = "<group>"; };
@@ -104,6 +106,7 @@
 		97EDD5EEA1DAFA68564575CD /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				F2F147CC51D645A19E405A02 /* LaunchScreen.storyboard */,
 				EA4FF070ABE25B360A297E05 /* Privacy.html */,
 				610AE1BC43CEF7141FF0B7A8 /* Terms.html */,
 			);
@@ -197,6 +200,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F2F147CC51D645A19E405A01 /* LaunchScreen.storyboard in Resources */,
 				3183505441B12CBDEF0FB51C /* Assets.xcassets in Resources */,
 				3B14AA74713CD00652F58D3F /* Privacy.html in Resources */,
 				E341A2E62E83C5C3178E6E67 /* Terms.html in Resources */,
@@ -310,7 +314,7 @@
 				INFOPLIST_KEY_GADApplicationIdentifier = "ca-app-pub-3940256099942544~1458002511";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Satchel uses the camera to add photos to your travel journal and packing notes.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -397,7 +401,7 @@
 				INFOPLIST_KEY_GADApplicationIdentifier = "ca-app-pub-3940256099942544~1458002511";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Satchel uses the camera to add photos to your travel journal and packing notes.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

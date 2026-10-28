@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23094" targetRuntime="iOS.CocoaTouch" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="launch-controller">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23084"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <scene sceneID="launch-scene">
+            <objects>
+                <viewController id="launch-controller" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="launch-view">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="LaunchIcon" translatesAutoresizingMaskIntoConstraints="NO" id="launch-icon">
+                                <rect key="frame" x="104.5" y="317" width="184" height="184"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="184" priority="999" id="icon-width"/>
+                                    <constraint firstAttribute="height" secondItem="launch-icon" secondAttribute="width" id="icon-height"/>
+                                </constraints>
+                            </imageView>
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="launch-loading">
+                                <rect key="frame" x="161.5" y="525" width="70" height="8"/>
+                                <subviews>
+                                    <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" image="LaunchStitch" translatesAutoresizingMaskIntoConstraints="NO" id="loading-one"/>
+                                    <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" image="LaunchStitch" translatesAutoresizingMaskIntoConstraints="NO" id="loading-two"/>
+                                    <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" image="LaunchStitch" translatesAutoresizingMaskIntoConstraints="NO" id="loading-three"/>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="70" id="loading-width"/>
+                                    <constraint firstAttribute="height" constant="8" id="loading-height"/>
+                                </constraints>
+                            </stackView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="launch-safe"/>
+                        <color key="backgroundColor" red="0.9921568627" green="0.9725490196" blue="0.9058823529" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="launch-icon" firstAttribute="centerX" secondItem="launch-view" secondAttribute="centerX" id="icon-center-x"/>
+                            <constraint firstItem="launch-icon" firstAttribute="centerY" secondItem="launch-view" secondAttribute="centerY" constant="-16" id="icon-center-y"/>
+                            <constraint firstItem="launch-icon" firstAttribute="width" relation="lessThanOrEqual" secondItem="launch-view" secondAttribute="width" constant="-32" id="icon-safe-width"/>
+                            <constraint firstItem="launch-icon" firstAttribute="height" relation="lessThanOrEqual" secondItem="launch-view" secondAttribute="height" constant="-64" id="icon-safe-height"/>
+                            <constraint firstItem="launch-loading" firstAttribute="top" secondItem="launch-icon" secondAttribute="bottom" constant="24" id="loading-top"/>
+                            <constraint firstItem="launch-loading" firstAttribute="centerX" secondItem="launch-icon" secondAttribute="centerX" id="loading-center-x"/>
+                        </constraints>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="launch-first-responder" sceneMemberID="firstResponder"/>
+            </objects>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="LaunchIcon" width="1024" height="1024"/>
+        <image name="LaunchStitch" width="1774" height="887"/>
+    </resources>
+</document>
