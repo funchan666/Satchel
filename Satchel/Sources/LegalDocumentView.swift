@@ -15,7 +15,7 @@ struct LegalDocumentView: View {
     var presented = false
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack { Button(l.text(presented ? "Close" : "Me")) { dismiss() }.buttonStyle(SecondaryButton()); Spacer() }
+            HStack { BackTagButton(label: l.text(presented ? "Close" : "Back")) { dismiss() }; Spacer() }
             Text(l.text("The full document is currently available in English.")).font(.footnote).foregroundColor(Palette.muted)
             if document == .privacy && ads.privacyOptionsRequired {
                 Button(l.text("Ad privacy choices")) {
@@ -27,6 +27,7 @@ struct LegalDocumentView: View {
                 if privacyError { Text(l.text("Privacy options are unavailable right now.")).font(.footnote).foregroundColor(Palette.rust) }
             }
             LegalWebView(document: document).frame(maxWidth: .infinity, maxHeight: .infinity)
+                .clipShape(RoundedRectangle(cornerRadius: 20))
         }.padding(20).modifier(Page()).toolbar(.hidden, for: .navigationBar)
     }
 }

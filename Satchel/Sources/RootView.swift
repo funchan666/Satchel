@@ -33,7 +33,7 @@ struct RootView: View {
                 .padding(.horizontal, 20).padding(.vertical, 8)
             }.modifier(Page())
             .toolbar(.hidden, for: .navigationBar)
-            .sheet(isPresented: $creating) { NewTripView(l: l) }
+            .navigationDestination(isPresented: $creating) { NewTripView(l: l) }
         }
     }
 }
@@ -200,7 +200,12 @@ struct JournalOverview: View {
                     }
                 }
             }.padding(.horizontal, 20).padding(.top, 16).padding(.bottom, 28).frame(maxWidth: 720)
-        }.sheet(item: $selectedTrip) { trip in EntryEditor(l: l, tripID: trip.id, existing: nil) }
+        }.navigationDestination(isPresented: Binding(
+            get: { selectedTrip != nil },
+            set: { if !$0 { selectedTrip = nil } }
+        )) {
+            if let trip = selectedTrip { EntryEditor(l: l, tripID: trip.id, existing: nil) }
+        }
     }
     private var journalCover: some View {
         EditorialBanner(artwork: "JournalCoast", height: 290)
@@ -326,7 +331,7 @@ struct TemplateView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Button(l.text("Me")) { dismiss() }.buttonStyle(SecondaryButton())
+                BackTagButton(label: l.text("Back")) { dismiss() }
                 EditorialBanner(artwork: "PackingEditorial")
                 ForEach($draft) { $item in
                     VStack(alignment: .leading, spacing: 8) {

@@ -17,7 +17,23 @@ enum Palette {
 struct Page: ViewModifier {
     func body(content: Content) -> some View {
         content.foregroundColor(Palette.ink)
-            .background(Palette.paper.ignoresSafeArea(.container))
+            .background {
+                GeometryReader { geometry in
+                    Image("PageLinen").resizable().scaledToFill()
+                        .frame(width: geometry.size.width, height: geometry.size.height).clipped()
+                        .accessibilityHidden(true)
+                }.ignoresSafeArea(.container)
+            }
+    }
+}
+struct BackTagButton: View {
+    let label: String
+    let action: () -> Void
+    var body: some View {
+        Button(action: action) {
+            Image("BackTag").resizable().scaledToFit().frame(width: 72, height: 48)
+                .frame(minWidth: 72, minHeight: 48).contentShape(Rectangle())
+        }.buttonStyle(.plain).accessibilityLabel(label)
     }
 }
 struct PrimaryButton: ButtonStyle {

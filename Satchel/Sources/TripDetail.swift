@@ -32,7 +32,7 @@ struct TripDetail: View {
             if let trip {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
-                        HStack { Button(l.text("Trips")) { dismiss() }.buttonStyle(SecondaryButton()); Spacer(); Button(l.text("Edit trip")) { editingTrip = true }.buttonStyle(SecondaryButton()) }
+                        HStack { BackTagButton(label: l.text("Back")) { dismiss() }; Spacer(); Button(l.text("Edit trip")) { editingTrip = true }.buttonStyle(SecondaryButton()) }
                         ZStack(alignment: .bottomLeading) {
                             PhotoView(name: trip.cover).frame(height: 270).frame(maxWidth: .infinity).clipped()
                             VStack(alignment: .leading, spacing: 7) {
@@ -54,11 +54,11 @@ struct TripDetail: View {
                 }
             } else { Text(l.text("Trips")) }
         }.modifier(Page()).toolbar(.hidden, for: .navigationBar)
-            .sheet(isPresented: $showItem) { ItemEditor(l: l, tripID: tripID, existing: editingItem) }
-            .sheet(isPresented: $showEntry) { EntryEditor(l: l, tripID: tripID, existing: editingEntry) }
-            .sheet(isPresented: $editingLessons) { lessonEditor }
-            .sheet(isPresented: $editingTrip) { TripEditor(l: l, tripID: tripID) }
-            .sheet(isPresented: $editingPhoto) { packingPhotoEditor }
+            .navigationDestination(isPresented: $showItem) { ItemEditor(l: l, tripID: tripID, existing: editingItem) }
+            .navigationDestination(isPresented: $showEntry) { EntryEditor(l: l, tripID: tripID, existing: editingEntry) }
+            .navigationDestination(isPresented: $editingLessons) { lessonEditor }
+            .navigationDestination(isPresented: $editingTrip) { TripEditor(l: l, tripID: tripID) }
+            .navigationDestination(isPresented: $editingPhoto) { packingPhotoEditor }
     }
     private func sectionButton(_ title: String, index: Int) -> some View {
         Button { if reduceMotion { section = index } else { withAnimation(.easeInOut(duration: 0.18)) { section = index } } } label: {
@@ -158,6 +158,7 @@ struct TripDetail: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 ErrorNotice(l: l)
+                BackTagButton(label: l.text("Back")) { editingPhoto = false }
                 if let image = store.image(selectedPhoto) { Image(uiImage: image).resizable().scaledToFit().clipShape(RoundedRectangle(cornerRadius: 12)) }
                 Text(l.text("Notes")).font(.headline)
                 TextField(l.text("Notes"), text: $photoNote).modifier(FieldStyle())
@@ -179,6 +180,8 @@ struct TripDetail: View {
     private var lessonEditor: some View {
         ScrollView { VStack(alignment: .leading, spacing: 16) {
             ErrorNotice(l: l)
+            BackTagButton(label: l.text("Back")) { editingLessons = false }
+            EditorialBanner(artwork: "JournalCoast", height: 150)
             TextEditor(text: $lessonDraft).scrollContentBackground(.hidden).frame(minHeight: 180).padding(8).background(Palette.cream, in: RoundedRectangle(cornerRadius: 12))
             HStack { Button(l.text("Cancel")) { editingLessons = false }.buttonStyle(SecondaryButton()); Button(l.text("Save")) { if var current = trip { current.lessons = lessonDraft; if store.update(current) { editingLessons = false } } }.buttonStyle(PrimaryButton()) }
         }.padding(20).frame(maxWidth: 700) }.modifier(Page())

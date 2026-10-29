@@ -21,11 +21,10 @@ struct NewTripView: View {
     @State private var coverData: Data?
     @State private var validation = false
     var body: some View {
-        NavigationStack {
-            ScrollView {
+        ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     ErrorNotice(l: l)
-                    HStack { Spacer(); Button(l.text("Cancel")) { dismiss() }.buttonStyle(SecondaryButton()) }
+                    BackTagButton(label: l.text("Back")) { dismiss() }
                     Group {
                         if let coverData, let image = UIImage(data: coverData) { Image(uiImage: image).resizable().scaledToFill() }
                         else { Image("SeaJourneyHero").resizable().scaledToFill() }
@@ -57,8 +56,7 @@ struct NewTripView: View {
                     if validation { Text(l.text("Please check the destination and dates.")).foregroundColor(Palette.rust).font(.footnote) }
                     Button { create() } label: { AddActionLabel(title: l.text("Create trip")).frame(maxWidth: .infinity) }.buttonStyle(PrimaryButton())
                 }.padding(20).frame(maxWidth: 700)
-            }.modifier(Page()).toolbar(.hidden, for: .navigationBar)
-        }
+        }.modifier(Page()).toolbar(.hidden, for: .navigationBar)
     }
     private func field(_ title: String, text: Binding<String>) -> some View {
         VStack(alignment: .leading, spacing: 7) { Text(title).font(.subheadline.weight(.semibold)); TextField(title, text: text).modifier(FieldStyle()) }
@@ -97,6 +95,7 @@ struct ItemEditor: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 15) {
                 ErrorNotice(l: l)
+                BackTagButton(label: l.text("Back")) { if let photo { store.removeUnusedPhotos([photo]) }; dismiss() }
                 EditorialBanner(artwork: "PackingEditorial")
                 VStack(alignment: .leading, spacing: 14) { input("Item name", $name); input("Category", $category) }
                     .padding(14).modifier(SatchelGlass(tint: Palette.cream.opacity(0.2), cornerRadius: 18))
@@ -122,7 +121,7 @@ struct ItemEditor: View {
                     else { Button(l.text("Delete")) { confirmingItemDelete = true }.buttonStyle(SecondaryButton()) }
                 }
             }.padding(20).frame(maxWidth: 700)
-        }.modifier(Page()).onAppear {
+        }.modifier(Page()).toolbar(.hidden, for: .navigationBar).onAppear {
             if let item = existing { name = item.suggestedNameKey.map(l.text) ?? item.name; category = item.suggestedCategoryKey.map(l.text) ?? item.category; quantity = item.quantity; location = item.location; notes = item.notes; needsReturn = item.needsReturn; photo = item.photo }
         }
     }
@@ -159,6 +158,7 @@ struct EntryEditor: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 17) {
                 ErrorNotice(l: l)
+                BackTagButton(label: l.text("Back")) { store.removeUnusedPhotos(Set(photos)); dismiss() }
                 EditorialBanner(artwork: "JournalEditorial")
                 Text(l.text("Date")).font(.headline)
                 TextField("YYYY-MM-DD HH:mm", text: $dateText).modifier(FieldStyle())
@@ -178,7 +178,7 @@ struct EntryEditor: View {
                     else { Button(l.text("Delete")) { confirmingDelete = true }.buttonStyle(SecondaryButton()) }
                 }
             }.padding(20).frame(maxWidth: 700)
-        }.modifier(Page()).onAppear { if let entry = existing { text = entry.text; date = entry.date; dateText = dateTimeFormatter.string(from: entry.date); photos = entry.photos } }
+        }.modifier(Page()).toolbar(.hidden, for: .navigationBar).onAppear { if let entry = existing { text = entry.text; date = entry.date; dateText = dateTimeFormatter.string(from: entry.date); photos = entry.photos } }
     }
     private func save() {
         guard var trip = store.trips.first(where: { $0.id == tripID }) else { return }
@@ -207,6 +207,7 @@ struct TripEditor: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 ErrorNotice(l: l)
+                BackTagButton(label: l.text("Back")) { dismiss() }
                 EditorialBanner(artwork: "SeaJourneyHero")
                 labelField("Destination", $destination)
                 labelField("Start date", $start)
@@ -219,7 +220,7 @@ struct TripEditor: View {
                     HStack { Button(l.text("Cancel")) { deleting = false }.buttonStyle(SecondaryButton()); Button(l.text("Delete")) { delete() }.buttonStyle(PrimaryButton()) }
                 } else { Button(l.text("Delete trip")) { deleting = true }.buttonStyle(SecondaryButton()) }
             }.padding(20).frame(maxWidth: 700)
-        }.modifier(Page()).onAppear {
+        }.modifier(Page()).toolbar(.hidden, for: .navigationBar).onAppear {
             if let trip = store.trips.first(where: { $0.id == tripID }) { destination = trip.destination; start = dateFormatter.string(from: trip.start); end = dateFormatter.string(from: trip.end) }
         }
     }

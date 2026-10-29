@@ -7,6 +7,7 @@ struct L10n {
 private let languages = ["en", "zh-Hans", "zh-Hant", "ja", "ko", "es", "fr", "de", "pt"]
 private func row(_ values: [String]) -> [String: String] { Dictionary(uniqueKeysWithValues: zip(languages, values)) }
 private let guideTranslations: [String: [String: String]] = [
+"Back":row(["Back", "返回", "返回", "戻る", "뒤로", "Volver", "Retour", "Zurück", "Voltar"]),
 "Travel guide":row(["Travel guide", "旅行助手", "旅行助手", "旅のガイド", "여행 가이드", "Guía de viaje", "Guide de voyage", "Reiseführer", "Guia de viagem"]),
 "Ideas for your journey":row(["Ideas for your journey", "让每段旅程更从容", "讓每段旅程更從容", "旅のヒントをあなたに", "여행을 위한 작은 아이디어", "Ideas para tu viaje", "Des idées pour votre voyage", "Ideen für deine Reise", "Ideias para sua viagem"]),
 "Ask about packing, planning or journaling.":row(["Ask about packing, planning or journaling.", "问问行李、行程或旅行记录。", "問問行李、行程或旅行記錄。", "荷造りや旅の計画、日記についてどうぞ。", "짐 꾸리기, 여행 계획, 기록을 물어보세요.", "Pregunta por el equipaje, los planes o el diario.", "Parlez bagages, itinéraires ou journal.", "Frage nach Gepäck, Planung oder Tagebuch.", "Pergunte sobre bagagem, planos ou diário."]),
