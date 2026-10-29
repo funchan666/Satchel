@@ -62,6 +62,17 @@ struct PrimaryButton: ButtonStyle {
             .opacity(isEnabled ? 1 : 0.55)
     }
 }
+struct TabPrimaryButton: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label.font(.system(.subheadline, design: .rounded).weight(.semibold))
+            .foregroundColor(.white).multilineTextAlignment(.center)
+            .padding(.horizontal, 20).padding(.vertical, 12).frame(minHeight: 48)
+            .modifier(PaperSurface(artwork: "TabAction", radius: 15))
+            .opacity(configuration.isPressed ? 0.8 : 1).opacity(isEnabled ? 1 : 0.55)
+    }
+}
+
 /// A small, original mark makes creation actions recognizable without extra explanatory copy.
 struct AddActionLabel: View {
     let title: String
@@ -88,6 +99,19 @@ struct FieldStyle: ViewModifier {
             .modifier(PaperSurface(artwork: "ButtonPaper", radius: 14))
     }
 }
+// The picture can extend beneath system chrome; controls are placed below it.
+struct TabHero: View {
+    let artwork: String
+    var height: CGFloat = 250
+    var body: some View {
+        GeometryReader { geometry in
+            Image(artwork).resizable().scaledToFill()
+                .frame(width: geometry.size.width, height: geometry.size.height)
+                .clipped().accessibilityHidden(true)
+        }.frame(height: height).frame(maxWidth: .infinity)
+    }
+}
+
 struct EditorialBanner: View {
     let artwork: String
     var height: CGFloat = 110

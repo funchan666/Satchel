@@ -3,7 +3,6 @@ import StoreKit
 
 struct MembershipView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.openURL) private var openURL
     @EnvironmentObject private var membership: MembershipStore
     let l: L10n
 
@@ -26,14 +25,6 @@ struct MembershipView: View {
                     Text(l.text(message)).font(.footnote).foregroundColor(Palette.rust)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                VStack(spacing: 10) {
-                    Button { Task { await membership.restore() } } label: { Text(l.text("Restore purchases")).frame(maxWidth: .infinity, alignment: .leading) }
-                        .buttonStyle(SecondaryButton()).disabled(membership.loading)
-                    Button {
-                        if let url = URL(string: "https://apps.apple.com/account/subscriptions") { openURL(url) }
-                    } label: { Text(l.text("Manage membership")).frame(maxWidth: .infinity, alignment: .leading) }.buttonStyle(SecondaryButton())
-                }.frame(maxWidth: .infinity, alignment: .leading).padding(16)
-                    .modifier(SatchelGlass(tint: Palette.cream.opacity(0.32), cornerRadius: 20))
                 Text(l.text("Subscriptions renew automatically unless cancelled through your Apple account. Manage or cancel in your App Store account settings."))
                     .font(.footnote).foregroundColor(Palette.muted).fixedSize(horizontal: false, vertical: true)
                 VStack(alignment: .leading, spacing: 10) {
@@ -63,11 +54,33 @@ struct MembershipView: View {
             VStack(alignment: .leading, spacing: 9) {
                 Text(l.text("Free: up to 3 trips and 30 photos. Membership: unlimited trips and photos."))
                     .font(.subheadline.weight(.medium))
+                Text(l.text("Free: one travel question per day. Membership: unlimited questions."))
+                    .font(.subheadline.weight(.medium))
                 Text(l.text("Your saved trips remain available to view and export even if membership ends."))
                     .font(.footnote).foregroundColor(Palette.muted)
             }.fixedSize(horizontal: false, vertical: true)
         }.frame(maxWidth: .infinity, alignment: .leading).padding(18)
             .modifier(SatchelGlass(tint: Palette.cream.opacity(0.30), cornerRadius: 20))
+    }
+
+    private func periodDescription(_ product: Product) -> String? {
+        guard let period = product.subscription?.subscriptionPeriod else { return nil }
+        var components = DateComponents()
+        let unit: NSCalendar.Unit
+        switch period.unit {
+        case .day: unit = .day; components.day = period.value
+        case .week: unit = .weekOfMonth; components.weekOfMonth = period.value
+        case .month: unit = .month; components.month = period.value
+        case .year: unit = .year; components.year = period.value
+        @unknown default: return nil
+        }
+        let formatter = DateComponentsFormatter()
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.locale = Locale(identifier: l.code)
+        formatter.calendar = calendar
+        formatter.allowedUnits = unit
+        formatter.unitsStyle = .full
+        return formatter.string(from: components)
     }
 
     private func planCard(_ id: String) -> some View {
@@ -78,16 +91,18 @@ struct MembershipView: View {
                 Image(monthly ? "NavTrips" : "SeaJournal").resizable().scaledToFit()
                     .frame(width: 48, height: 48).accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(l.text(monthly ? "Monthly membership" : "Yearly membership"))
-                        .font(.system(size: 20, design: .serif)).fixedSize(horizontal: false, vertical: true)
-                    if let product {
-                        Text(product.displayPrice + " / " + l.text(monthly ? "month" : "year"))
+                    if let product, let period = periodDescription(product) {
+                        Text(period).font(.system(size: 20, design: .serif)).fixedSize(horizontal: false, vertical: true)
+                        Text(product.displayPrice + " / " + period)
                             .font(.subheadline.weight(.semibold)).foregroundColor(Palette.ocean)
+                    } else {
+                        Text(l.text(monthly ? "Monthly membership" : "Yearly membership"))
+                            .font(.system(size: 20, design: .serif)).fixedSize(horizontal: false, vertical: true)
                     }
                 }
                 Spacer(minLength: 0)
             }
-            if let product {
+            if let product, periodDescription(product) != nil {
                 Button { Task { await membership.purchase(product) } } label: {
                     Text(l.text("Subscribe")).frame(maxWidth: .infinity)
                 }.buttonStyle(PrimaryButton()).disabled(membership.loading)

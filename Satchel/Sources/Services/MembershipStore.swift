@@ -60,8 +60,11 @@ enum SubscriptionProductIDs {
             products = productIDs.compactMap { id in
                 available.first { product in
                     guard product.id == id, product.type == .autoRenewable,
-                          let period = product.subscription?.subscriptionPeriod, period.value == 1 else { return false }
-                    return id == Self.monthlyID ? period.unit == .month : period.unit == .year
+                          let period = product.subscription?.subscriptionPeriod, period.value > 0 else { return false }
+                    switch period.unit {
+                    case .day, .week, .month, .year: return true
+                    @unknown default: return false
+                    }
                 }
             }
             if products.count < productIDs.count { message = "Subscription products are not available yet. Please try again later." }

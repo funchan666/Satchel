@@ -52,31 +52,35 @@ struct TripsView: View {
     }
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                HStack {
-                    Spacer()
-                    Button(l.text(showSearch ? "Cancel" : "Search")) { withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.2)) { showSearch.toggle(); if !showSearch { query = "" } } }
-                        .buttonStyle(SecondaryButton())
-                }
-                if showSearch {
-                    TextField(l.text("Search journeys and memories"), text: $query).modifier(FieldStyle())
-                        .accessibilityLabel(l.text("Search journeys and memories"))
-                }
-                if sorted.isEmpty {
-                    welcome
-                } else {
-                    overview
-                    if filtered.isEmpty {
-                        Text(l.text("No matching journeys")).font(.system(size: 22, design: .serif)).padding(.vertical, 24)
-                    } else {
-                        let upcoming = filtered.filter { Calendar.current.startOfDay(for: $0.end) >= Calendar.current.startOfDay(for: Date()) }.sorted { $0.start < $1.start }
-                        let past = filtered.filter { Calendar.current.startOfDay(for: $0.end) < Calendar.current.startOfDay(for: Date()) }
-                        if !upcoming.isEmpty { section(l.text("Upcoming"), trips: upcoming) }
-                        if !past.isEmpty { section(l.text("Past journeys"), trips: past) }
+            VStack(spacing: 0) {
+                Color.clear.frame(height: 190).accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 20) {
+                    if !sorted.isEmpty {
+                        HStack { Spacer(); searchButton }
                     }
-                }
-                if !showSearch { shortcuts }
-            }.padding(.horizontal, 20).padding(.top, 16).padding(.bottom, 28).frame(maxWidth: 720)
+                    if showSearch {
+                        TextField(l.text("Search journeys and memories"), text: $query).modifier(FieldStyle())
+                            .accessibilityLabel(l.text("Search journeys and memories"))
+                    }
+                    if sorted.isEmpty {
+                        welcome
+                    } else {
+                        overview
+                        if filtered.isEmpty {
+                            Text(l.text("No matching journeys")).font(.system(size: 22, design: .serif)).padding(.vertical, 24)
+                        } else {
+                            let upcoming = filtered.filter { Calendar.current.startOfDay(for: $0.end) >= Calendar.current.startOfDay(for: Date()) }.sorted { $0.start < $1.start }
+                            let past = filtered.filter { Calendar.current.startOfDay(for: $0.end) < Calendar.current.startOfDay(for: Date()) }
+                            if !upcoming.isEmpty { section(l.text("Upcoming"), trips: upcoming) }
+                            if !past.isEmpty { section(l.text("Past journeys"), trips: past) }
+                        }
+                    }
+                    if !showSearch { shortcuts }
+                }.padding(.horizontal, 20).padding(.top, 18).padding(.bottom, 28).frame(maxWidth: 720)
+                    .background(Palette.paper)
+            }.frame(maxWidth: .infinity)
+        }.background(alignment: .top) {
+            TabHero(artwork: "CoastNotebook").ignoresSafeArea(.container, edges: .top)
         }
     }
     private var shortcuts: some View {
@@ -95,22 +99,28 @@ struct TripsView: View {
             }.frame(maxWidth: .infinity, minHeight: 48, alignment: .leading).contentShape(Rectangle())
         }.buttonStyle(.plain)
     }
+    private var searchButton: some View {
+        Button(l.text(showSearch ? "Cancel" : "Search")) {
+            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.2)) {
+                showSearch.toggle()
+                if !showSearch { query = "" }
+            }
+        }.buttonStyle(SecondaryButton())
+    }
     private var welcome: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            EditorialBanner(artwork: "CoastNotebook", height: 225)
-            HStack(alignment: .center, spacing: 14) {
-                VStack(alignment: .leading, spacing: 7) {
-                    Text(l.text("Your next journey starts here."))
-                        .font(.system(size: 25, design: .serif)).fixedSize(horizontal: false, vertical: true)
-                    Text(l.text("Keep your packing list and memories in one place."))
-                        .font(.footnote).foregroundColor(Palette.muted).fixedSize(horizontal: false, vertical: true)
-                }
-                Spacer(minLength: 0)
-                Image("TravelTicket").resizable().scaledToFit().frame(width: 62, height: 62).accessibilityHidden(true)
-            }.padding(.top, 18)
-            Button { creating = true } label: { AddActionLabel(title: l.text("New Trip")) }
-                .buttonStyle(PrimaryButton()).padding(.top, 18)
-        }.frame(maxWidth: .infinity, alignment: .leading)
+        HStack(alignment: .top, spacing: 0) {
+            VStack(alignment: .leading, spacing: 14) {
+                Text(l.text("Your next journey starts here."))
+                    .font(.system(size: 25, design: .serif)).fixedSize(horizontal: false, vertical: true)
+                Text(l.text("Keep your packing list and memories in one place."))
+                    .font(.footnote).foregroundColor(Palette.muted).fixedSize(horizontal: false, vertical: true)
+                Button { creating = true } label: { AddActionLabel(title: l.text("New Trip")) }
+                    .buttonStyle(TabPrimaryButton())
+                searchButton
+            }.frame(maxWidth: .infinity, alignment: .leading)
+            Spacer(minLength: 65).frame(maxWidth: 100)
+        }.padding(18).frame(maxWidth: .infinity, alignment: .leading)
+            .modifier(PaperSurface(artwork: "JourneyPaper", radius: 22))
     }
     private var overview: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -176,53 +186,56 @@ struct JournalOverview: View {
     }
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 22) {
-                if !trips.isEmpty {
-                    TextField(l.text("Search journeys and memories"), text: $query).modifier(FieldStyle())
-                    if trips.count == 1, let trip = trips.first, !trip.entries.isEmpty {
-                        Button { selectedTrip = trip } label: { AddActionLabel(title: l.text("Add a memory")) }.buttonStyle(PrimaryButton())
-                    } else if trips.count > 1 {
-                        Text(l.text("Choose a journey to add a memory")).font(.subheadline.weight(.semibold)).foregroundColor(Palette.muted)
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) { ForEach(trips) { trip in Button(trip.destination) { selectedTrip = trip }.buttonStyle(SecondaryButton()) } }
+            VStack(spacing: 0) {
+                Color.clear.frame(height: 190).accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 22) {
+                    if !trips.isEmpty {
+                        TextField(l.text("Search journeys and memories"), text: $query).modifier(FieldStyle())
+                        if trips.count == 1, let trip = trips.first, !trip.entries.isEmpty {
+                            Button { selectedTrip = trip } label: { AddActionLabel(title: l.text("Add a memory")) }.buttonStyle(PrimaryButton())
+                        } else if trips.count > 1 {
+                            Text(l.text("Choose a journey to add a memory")).font(.subheadline.weight(.semibold)).foregroundColor(Palette.muted)
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 8) { ForEach(trips) { trip in Button(trip.destination) { selectedTrip = trip }.buttonStyle(SecondaryButton()) } }
+                            }
                         }
                     }
-                }
-                if trips.isEmpty {
-                    journalCover
-                    journalInvitation
-                } else if matches.isEmpty {
-                    journalCover
-                    if query.isEmpty { journalInvitation }
-                    else { Text(l.text("No matching memories")).font(.system(size: 23, design: .serif)) }
-                } else {
-                    ForEach(matches) { trip in
-                        NavigationLink { TripDetail(tripID: trip.id, l: l, initialSection: 1) } label: { memoryCard(trip) }.buttonStyle(.plain)
+                    if trips.isEmpty {
+                        journalInvitation
+                    } else if matches.isEmpty {
+                        if query.isEmpty { journalInvitation }
+                        else { Text(l.text("No matching memories")).font(.system(size: 23, design: .serif)) }
+                    } else {
+                        ForEach(matches) { trip in
+                            NavigationLink { TripDetail(tripID: trip.id, l: l, initialSection: 1) } label: { memoryCard(trip) }.buttonStyle(.plain)
+                        }
                     }
-                }
-            }.padding(.horizontal, 20).padding(.top, 16).padding(.bottom, 28).frame(maxWidth: 720)
-        }.navigationDestination(isPresented: Binding(
-            get: { selectedTrip != nil },
-            set: { if !$0 { selectedTrip = nil } }
-        )) {
-            if let trip = selectedTrip { EntryEditor(l: l, tripID: trip.id, existing: nil) }
+                }.padding(.horizontal, 20).padding(.top, 20).padding(.bottom, 28).frame(maxWidth: 720)
+                    .background(Palette.paper)
+            }.frame(maxWidth: .infinity)
+        }.background(alignment: .top) {
+            TabHero(artwork: "JournalCoast").ignoresSafeArea(.container, edges: .top)
         }
-    }
-    private var journalCover: some View {
-        EditorialBanner(artwork: "JournalCoast", height: 225)
+            .navigationDestination(isPresented: Binding(
+                get: { selectedTrip != nil },
+                set: { if !$0 { selectedTrip = nil } }
+            )) {
+                if let trip = selectedTrip { EntryEditor(l: l, tripID: trip.id, existing: nil) }
+            }
     }
     private var journalInvitation: some View {
-        HStack(alignment: .center, spacing: 16) {
-            Image("SeaJournal").resizable().scaledToFit().frame(width: 68, height: 68).accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 12) {
-                Text(l.text("Your memories start here.")).font(.system(size: 22, design: .serif)).fixedSize(horizontal: false, vertical: true)
-                if trips.isEmpty {
-                    Button { creating = true } label: { AddActionLabel(title: l.text("New Trip")) }.buttonStyle(PrimaryButton())
-                } else if trips.count == 1, let trip = trips.first {
-                    Button { selectedTrip = trip } label: { AddActionLabel(title: l.text("Add a memory")) }.buttonStyle(PrimaryButton())
-                }
+        VStack(alignment: .leading, spacing: 12) {
+            Image("MemoryArtwork").resizable().scaledToFit()
+                .frame(maxWidth: .infinity).frame(height: 150).accessibilityHidden(true)
+            Text(l.text("Your memories start here."))
+                .font(.system(size: 24, design: .serif)).fixedSize(horizontal: false, vertical: true)
+            if trips.isEmpty {
+                Button { creating = true } label: { AddActionLabel(title: l.text("New Trip")) }.buttonStyle(TabPrimaryButton())
+            } else if trips.count == 1, let trip = trips.first {
+                Button { selectedTrip = trip } label: { AddActionLabel(title: l.text("Add a memory")) }.buttonStyle(TabPrimaryButton())
             }
-        }.frame(maxWidth: .infinity, alignment: .leading).padding(.vertical, 8)
+        }.frame(maxWidth: .infinity, alignment: .leading).padding(20)
+            .modifier(PaperSurface(artwork: "CoastalPaper", radius: 22))
     }
     private func memoryCard(_ trip: Trip) -> some View {
         let term = query.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -246,58 +259,94 @@ struct JournalOverview: View {
 }
 struct SettingsView: View {
     @EnvironmentObject private var store: TravelStore
+    @EnvironmentObject private var membership: MembershipStore
     @State private var exportFile: ExportFile?
+    @State private var restoreMessage: String?
+    @State private var showLanguages = false
     let l: L10n
     @AppStorage("satchel.language") private var language = "en"
     private let options = [("en", "English"), ("zh-Hans", "简体中文"), ("zh-Hant", "繁體中文"), ("ja", "日本語"), ("ko", "한국어"), ("es", "Español"), ("fr", "Français"), ("de", "Deutsch"), ("pt", "Português")]
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                HStack(alignment: .center, spacing: 12) {
-                    Image("NavMe").resizable().scaledToFit().frame(width: 48, height: 48).accessibilityHidden(true)
-                    collectionCount(store.trips.count, l.text("Trips"))
-                    collectionCount(store.trips.reduce(0) { $0 + $1.entries.count }, l.text("Memories"))
-                    collectionCount(store.referencedPhotos(in: store.trips).count, l.text("Photos"))
-                }.frame(maxWidth: .infinity, alignment: .leading).padding(16)
-                    .modifier(SatchelGlass(tint: Palette.seaTint.opacity(0.25), cornerRadius: 20))
-                NavigationLink { MembershipView(l: l) } label: {
-                    HStack(spacing: 15) {
-                        Image("MembershipArt").resizable().scaledToFit().frame(width: 74, height: 74).accessibilityHidden(true)
-                        VStack(alignment: .leading, spacing: 7) {
-                            Text(l.text("Satchel Membership")).font(.system(size: 21, design: .serif)).multilineTextAlignment(.leading)
-                            Text(l.text("More room for every journey.")).font(.caption).foregroundColor(Palette.muted).multilineTextAlignment(.leading)
-                        }
-                        Spacer(minLength: 0)
-                        Image("NextMark").resizable().scaledToFit().frame(width: 28, height: 28).accessibilityHidden(true)
-                    }.frame(maxWidth: .infinity, minHeight: 82, alignment: .leading).padding(15)
-                        .modifier(SatchelGlass(tint: Palette.seaTint.opacity(0.35), interactive: true, cornerRadius: 20))
-                }.buttonStyle(.plain)
-                VStack(alignment: .leading, spacing: 0) {
-                    VStack(spacing: 0) {
-                        NavigationLink { TemplateView(l: l) } label: { settingRow("Common list", artwork: "SeaTrips") }.buttonStyle(.plain)
-                        Button { do { exportFile = ExportFile(url: try store.export()) } catch { store.error = "Your journal could not be exported. Please try again." } } label: { settingRow("Export your journal", artwork: "SeaJournal") }.buttonStyle(.plain)
-                    }.padding(.horizontal, 14).modifier(SatchelGlass(tint: Palette.paper.opacity(0.16), cornerRadius: 20))
-                }
-                VStack(alignment: .leading, spacing: 0) {
-                    VStack(spacing: 0) {
-                        NavigationLink { LegalDocumentView(document: .privacy, l: l) } label: { settingRow("Privacy policy") }.buttonStyle(.plain)
-                        NavigationLink { LegalDocumentView(document: .terms, l: l) } label: { settingRow("Terms of use") }.buttonStyle(.plain)
-                    }.padding(.horizontal, 14).modifier(SatchelGlass(tint: Palette.paper.opacity(0.16), cornerRadius: 20))
-                }
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(l.text("Language")).font(.system(size: 22, design: .serif))
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 135), spacing: 8)], spacing: 8) {
-                        ForEach(options, id: \.0) { option in
-                            Button { language = option.0 } label: {
-                                HStack(spacing: 6) { Text(option.1).font(.subheadline); Spacer(minLength: 2); if language == option.0 { Image("FlatCheckOn").resizable().scaledToFit().frame(width: 32, height: 32).accessibilityHidden(true) } }
-                                    .padding(.horizontal, 12).frame(minHeight: 44)
-                                    .modifier(SatchelGlass(tint: language == option.0 ? Palette.ocean.opacity(0.20) : Palette.paper.opacity(0.12), interactive: true, cornerRadius: 12, fallback: language == option.0 ? Palette.seaTint : Palette.cream))
-                            }.buttonStyle(.plain).accessibilityValue(language == option.0 ? l.text("Selected") : l.text("Not selected"))
+            VStack(spacing: 0) {
+                Color.clear.frame(height: 190).accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 20) {
+                    HStack(alignment: .center, spacing: 12) {
+                        Image("NavMe").resizable().scaledToFit().frame(width: 48, height: 48).accessibilityHidden(true)
+                        collectionCount(store.trips.count, l.text("Trips"))
+                        collectionCount(store.trips.reduce(0) { $0 + $1.entries.count }, l.text("Memories"))
+                        collectionCount(store.referencedPhotos(in: store.trips).count, l.text("Photos"))
+                    }.frame(maxWidth: .infinity, alignment: .leading).padding(16)
+                        .modifier(SatchelGlass(tint: Palette.seaTint.opacity(0.25), cornerRadius: 20))
+                    NavigationLink { MembershipView(l: l) } label: {
+                        HStack(spacing: 15) {
+                            Image("MembershipArt").resizable().scaledToFit().frame(width: 74, height: 74).accessibilityHidden(true)
+                            VStack(alignment: .leading, spacing: 7) {
+                                Text(l.text("Satchel Membership")).font(.system(size: 21, design: .serif)).multilineTextAlignment(.leading)
+                                Text(l.text("More room for every journey.")).font(.caption).foregroundColor(Palette.muted).multilineTextAlignment(.leading)
+                            }
+                            Spacer(minLength: 0)
+                            Image("NextMark").resizable().scaledToFit().frame(width: 28, height: 28).accessibilityHidden(true)
+                        }.frame(maxWidth: .infinity, minHeight: 82, alignment: .leading).padding(15)
+                            .modifier(PaperSurface(artwork: "CoastalPaper", radius: 20))
+                    }.buttonStyle(.plain)
+                    VStack(alignment: .leading, spacing: 0) {
+                        VStack(spacing: 0) {
+                            NavigationLink { TemplateView(l: l) } label: { settingRow("Common list", artwork: "SeaTrips") }.buttonStyle(.plain)
+                            Button { do { exportFile = ExportFile(url: try store.export()) } catch { store.error = "Your journal could not be exported. Please try again." } } label: { settingRow("Export your journal", artwork: "SeaJournal") }.buttonStyle(.plain)
+                        }.padding(.horizontal, 14).modifier(PaperSurface(artwork: "CoastalPaper", radius: 20))
+                    }
+                    VStack(alignment: .leading, spacing: 0) {
+                        VStack(spacing: 0) {
+                            Button {
+                                restoreMessage = nil
+                                Task { await membership.restore(); restoreMessage = membership.message }
+                            } label: { settingRow("Restore purchases") }.buttonStyle(.plain).disabled(membership.loading)
+                            NavigationLink { LegalDocumentView(document: .privacy, l: l) } label: { settingRow("Privacy policy") }.buttonStyle(.plain)
+                            NavigationLink { LegalDocumentView(document: .terms, l: l) } label: { settingRow("Terms of use") }.buttonStyle(.plain)
+                        }.padding(.horizontal, 14).modifier(PaperSurface(artwork: "CoastalPaper", radius: 20))
+                    }
+                    if let restoreMessage {
+                        Text(l.text(restoreMessage)).font(.footnote).foregroundColor(Palette.muted)
+                    }
+                    VStack(alignment: .leading, spacing: 10) {
+                        Button { showLanguages.toggle() } label: {
+                            HStack(spacing: 12) {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(l.text("Language")).font(.system(size: 20, design: .serif))
+                                    Text(options.first { $0.0 == language }?.1 ?? "English")
+                                        .font(.subheadline).foregroundColor(Palette.muted)
+                                }
+                                Spacer(minLength: 8)
+                                Image("NextMark").resizable().scaledToFit().frame(width: 30, height: 30)
+                                    .rotationEffect(.degrees(showLanguages ? 90 : 0)).accessibilityHidden(true)
+                            }.frame(maxWidth: .infinity, minHeight: 50, alignment: .leading).padding(14)
+                                .modifier(PaperSurface(artwork: "CoastalPaper", radius: 18))
+                                .contentShape(Rectangle())
+                        }.buttonStyle(.plain)
+                            .accessibilityValue(l.text(showLanguages ? "Close" : "More options"))
+                        if showLanguages {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 135), spacing: 8)], spacing: 8) {
+                                ForEach(options, id: \.0) { option in
+                                    Button { language = option.0; showLanguages = false } label: {
+                                        HStack(spacing: 6) {
+                                            Text(option.1).font(.subheadline)
+                                            Spacer(minLength: 2)
+                                            if language == option.0 { Image("FlatCheckOn").resizable().scaledToFit().frame(width: 26, height: 26).accessibilityHidden(true) }
+                                        }.padding(.horizontal, 12).frame(minHeight: 48)
+                                            .modifier(PaperSurface(artwork: language == option.0 ? "ButtonSelected" : "ButtonPaper", radius: 14))
+                                    }.buttonStyle(.plain).accessibilityValue(language == option.0 ? l.text("Selected") : l.text("Not selected"))
+                                }
+                            }
                         }
                     }
-                }
-            }.padding(.horizontal, 20).padding(.top, 16).padding(.bottom, 28).frame(maxWidth: 720)
-        }.sheet(item: $exportFile) { ShareSheet(file: $0.url) }
+                }.padding(.horizontal, 20).padding(.top, 20).padding(.bottom, 28).frame(maxWidth: 720)
+                    .background(Palette.paper)
+            }.frame(maxWidth: .infinity)
+        }.background(alignment: .top) {
+            TabHero(artwork: "CollectionCoast").ignoresSafeArea(.container, edges: .top)
+        }
+            .sheet(item: $exportFile) { ShareSheet(file: $0.url) }
     }
     private func collectionCount(_ count: Int, _ label: String) -> some View {
         VStack(alignment: .leading, spacing: 4) { Text("\(count)").font(.system(size: 24, design: .serif)).monospacedDigit(); Text(label).font(.caption).foregroundColor(Palette.muted).fixedSize(horizontal: false, vertical: true) }
