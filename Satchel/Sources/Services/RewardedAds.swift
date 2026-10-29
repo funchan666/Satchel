@@ -30,7 +30,7 @@ import UserMessagingPlatform
         guard !active, controller.viewIfLoaded?.window != nil else { return "ad_not_ready" }
         let attempt = UUID()
         openAttempt = attempt
-        active = true
+        active = true; rewarded = false
         do {
             try await ConsentInformation.shared.requestConsentInfoUpdate(with: RequestParameters())
             guard openAttempt == attempt, shouldPresent() else { cancelPendingOpen(); return "ad_not_ready" }

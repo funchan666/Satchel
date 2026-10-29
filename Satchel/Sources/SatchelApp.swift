@@ -1,37 +1,92 @@
 import SwiftUI
+import UIKit
 
 @main struct SatchelApp: App {
     @StateObject private var store = TravelStore()
     @StateObject private var backend = PortalBackend()
+    @StateObject private var ads = RewardedAds()
     @AppStorage("satchel.language") private var language = "en"
     @Environment(\.scenePhase) private var scenePhase
     @State private var showingStartup = true
+    @State private var startupStarted = false
+    @State private var routeResolved = false
+    @State private var startupAdStarted = false
+    @State private var startupAdResolved = false
+
     var body: some Scene {
         WindowGroup {
             Group {
-                if backend.isSignedIn { RootView(l: L10n(code: language)) }
-                else { LoginView(l: L10n(code: language)) }
+                if showingStartup {
+                    StartupView(l: L10n(code: language)).ignoresSafeArea(.container)
+                } else if backend.url != nil {
+                    PortalEntry(l: L10n(code: language), directEntry: true)
+                } else {
+                    RootView(l: L10n(code: language))
+                }
             }
-                .accessibilityHidden(showingStartup)
-                .overlay {
-                    if showingStartup {
-                        StartupView(l: L10n(code: language))
-                            .ignoresSafeArea(.container)
-                    }
-                }
-                .environmentObject(store)
-                .environmentObject(store.membership)
-                .environmentObject(backend)
-                .environment(\.locale, Locale(identifier: language))
-                .task {
-                    guard showingStartup else { return }
-                    do {
-                        try await Task.sleep(nanoseconds: 800_000_000)
-                        showingStartup = false
-                    } catch { }
-                }
-                .onChange(of: scenePhase) { phase in if phase == .active { Task { await store.membership.refreshEntitlements() } } }
+            .background(AdPresentationAnchor { controller in beginStartupAd(from: controller) })
+            .environmentObject(store)
+            .environmentObject(store.membership)
+            .environmentObject(backend)
+            .environmentObject(ads)
+            .environment(\.locale, Locale(identifier: language))
+            .task { startSession() }
+            .onChange(of: scenePhase) { phase in
+                if phase == .active { Task { await store.membership.refreshEntitlements() } }
+            }
         }
+    }
+
+    private func startSession() {
+        guard !startupStarted else { return }
+        startupStarted = true
+        Task { @MainActor in
+            await backend.signIn()
+            if backend.isSignedIn { await backend.open(language: language) }
+            routeResolved = true
+            finishStartupIfReady()
+        }
+        // An unfilled or slow app-open request must never block the app indefinitely.
+        Task { @MainActor in
+            do { try await Task.sleep(nanoseconds: 5_000_000_000) } catch { return }
+            if !ads.openConsentInProgress && !ads.openAdIsPresenting {
+                ads.cancelPendingOpen()
+                startupAdResolved = true
+                finishStartupIfReady()
+            }
+        }
+    }
+
+    private func beginStartupAd(from controller: UIViewController) {
+        guard showingStartup, !startupAdStarted, !startupAdResolved else { return }
+        startupAdStarted = true
+        Task { @MainActor in
+            _ = await ads.showAppOpen(from: controller) {
+                showingStartup && !startupAdResolved && scenePhase == .active
+            }
+            startupAdResolved = true
+            finishStartupIfReady()
+        }
+    }
+
+    private func finishStartupIfReady() {
+        if routeResolved && startupAdResolved { showingStartup = false }
+    }
+}
+
+// The presenter belongs to this view's window rather than an arbitrary app scene.
+private struct AdPresentationAnchor: UIViewControllerRepresentable {
+    let onReady: (UIViewController) -> Void
+    func makeUIViewController(context: Context) -> AnchorController {
+        let controller = AnchorController()
+        controller.onReady = onReady
+        return controller
+    }
+    func updateUIViewController(_ controller: AnchorController, context: Context) { controller.onReady = onReady }
+    final class AnchorController: UIViewController {
+        var onReady: ((UIViewController) -> Void)?
+        override func viewDidLoad() { super.viewDidLoad(); view.backgroundColor = .clear; view.isUserInteractionEnabled = false }
+        override func viewDidAppear(_ animated: Bool) { super.viewDidAppear(animated); onReady?(self) }
     }
 }
 
