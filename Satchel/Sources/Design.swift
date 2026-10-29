@@ -5,12 +5,14 @@ import AVFoundation
 
 // Satchel's surfaces are ordinary layout; artwork comes from the asset catalog.
 enum Palette {
-    static let paper = Color(red: 0.97, green: 0.95, blue: 0.90)
-    static let ink = Color(red: 0.22, green: 0.18, blue: 0.15)
-    static let muted = Color(red: 0.46, green: 0.40, blue: 0.34)
-    static let rust = Color(red: 0.65, green: 0.31, blue: 0.22)
-    static let olive = Color(red: 0.40, green: 0.45, blue: 0.34)
-    static let cream = Color(red: 1, green: 0.985, blue: 0.95)
+    static let paper = Color(red: 0.97, green: 0.975, blue: 0.96)
+    static let cream = Color(red: 1.0, green: 0.99, blue: 0.96)
+    static let ink = Color(red: 0.12, green: 0.20, blue: 0.27)
+    static let muted = Color(red: 0.35, green: 0.42, blue: 0.46)
+    static let ocean = Color(red: 0.03, green: 0.28, blue: 0.64)
+    static let seaTint = Color(red: 0.83, green: 0.91, blue: 0.97)
+    static let rust = Color(red: 0.65, green: 0.28, blue: 0.18)
+    static let olive = Color(red: 0.31, green: 0.43, blue: 0.37)
 }
 struct Page: ViewModifier {
     func body(content: Content) -> some View {
@@ -19,19 +21,38 @@ struct Page: ViewModifier {
     }
 }
 struct PrimaryButton: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
     func makeBody(configuration: Configuration) -> some View {
         configuration.label.font(.system(size: 15, weight: .semibold)).foregroundColor(.white)
-            .padding(.horizontal, 20).padding(.vertical, 14).background(Palette.rust.opacity(configuration.isPressed ? 0.75 : 1), in: RoundedRectangle(cornerRadius: 12))
+            .padding(.horizontal, 25).padding(.vertical, 17)
+            .background { Image("SeaPrimary").resizable().interpolation(.high).opacity(configuration.isPressed ? 0.78 : 1) }
+            .opacity(isEnabled ? 1 : 0.55)
+    }
+}
+/// A small, original mark makes creation actions recognizable without extra explanatory copy.
+struct AddActionLabel: View {
+    let title: String
+    var body: some View {
+        HStack(spacing: 8) {
+            Image("AddMark").resizable().scaledToFit().frame(width: 19, height: 19).accessibilityHidden(true)
+            Text(title).multilineTextAlignment(.leading)
+        }.accessibilityElement(children: .combine)
     }
 }
 struct SecondaryButton: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
     func makeBody(configuration: Configuration) -> some View {
         configuration.label.font(.system(size: 15, weight: .semibold)).foregroundColor(Palette.ink)
-            .padding(.horizontal, 16).padding(.vertical, 12).background(Palette.cream.opacity(configuration.isPressed ? 0.65 : 1), in: RoundedRectangle(cornerRadius: 12))
+            .padding(.horizontal, 16).padding(.vertical, 12)
+            .background { Image("SeaSecondary").resizable().interpolation(.high).opacity(configuration.isPressed ? 0.8 : 0.65) }
+            .modifier(SatchelGlass(tint: Palette.paper.opacity(configuration.isPressed ? 0.28 : 0.12), interactive: true, cornerRadius: 14))
+            .opacity(isEnabled ? 1 : 0.55)
     }
 }
 struct FieldStyle: ViewModifier {
-    func body(content: Content) -> some View { content.padding(13).background(Palette.cream, in: RoundedRectangle(cornerRadius: 10)) }
+    func body(content: Content) -> some View {
+        content.padding(13).modifier(SatchelGlass(tint: Palette.paper.opacity(0.3), cornerRadius: 14))
+    }
 }
 struct EditorialTitle: View {
     let title: String
@@ -49,7 +70,7 @@ struct PhotoView: View {
     var body: some View {
         GeometryReader { geometry in
             Group { if let image = store.image(name) { Image(uiImage: image).resizable().scaledToFill() }
-            else { Image("TravelCover").resizable().scaledToFill() } }
+            else { Image("SeaJourneyHero").resizable().scaledToFill() } }
             .frame(width: geometry.size.width, height: geometry.size.height).clipped()
         }
     }
@@ -128,11 +149,11 @@ struct ChoiceButton: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 6) {
-                if selected { Image("CheckOn").resizable().scaledToFit().frame(width: 18, height: 18).accessibilityHidden(true) }
+                if selected { Image("SeaCheckOn").resizable().scaledToFit().frame(width: 32, height: 32).accessibilityHidden(true) }
                 Text(title).font(.system(size: 15, weight: selected ? .bold : .semibold))
             }.foregroundColor(Palette.ink)
                 .padding(.horizontal, 16).padding(.vertical, 12)
-                .modifier(SatchelGlass(tint: selected ? Palette.olive.opacity(0.28) : Palette.paper.opacity(0.12), interactive: true, cornerRadius: 12, fallback: selected ? Color(red: 0.80, green: 0.83, blue: 0.75) : Palette.cream))
+                .modifier(SatchelGlass(tint: selected ? Palette.ocean.opacity(0.20) : Palette.paper.opacity(0.12), interactive: true, cornerRadius: 12, fallback: selected ? Palette.seaTint : Palette.cream))
         }.buttonStyle(.plain).accessibilityValue(selected ? selectedLabel : unselectedLabel)
     }
 }

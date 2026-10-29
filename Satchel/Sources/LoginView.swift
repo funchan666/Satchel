@@ -65,12 +65,9 @@ struct LoginView: View {
                 Task { await backend.signIn() }
             } label: {
                 Text(backend.busy ? l.text("Signing in…") : l.text("Sign in"))
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity, minHeight: 54)
-                    .background(Palette.rust.opacity(agreed && !backend.busy ? 1 : 0.65), in: Capsule())
+                    .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(PrimaryButton())
             .disabled(!agreed || backend.busy)
 
             consent
@@ -88,8 +85,8 @@ struct LoginView: View {
     private var consent: some View {
         HStack(alignment: .top, spacing: 4) {
             Button { agreed.toggle() } label: {
-                Image(agreed ? "CheckOn" : "CheckOff")
-                    .resizable().scaledToFit().frame(width: 26, height: 26)
+                Image(agreed ? "SeaCheckOn" : "SeaCheckOff")
+                    .resizable().scaledToFit().frame(width: 40, height: 40)
                     .frame(width: 44, height: 44).contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -111,7 +108,7 @@ struct LoginView: View {
                     }
                 }
                 .font(.footnote.weight(.semibold))
-                .foregroundColor(Palette.rust)
+                .foregroundColor(Palette.ocean)
             }
             .padding(.top, 4)
             .frame(maxWidth: .infinity, alignment: .leading)

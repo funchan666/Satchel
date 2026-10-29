@@ -1,0 +1,114 @@
+{
+  "identifier": "3D884D2C-51BF-4FDB-B039-547F97E93458",
+  "nonRenewingSubscriptions": [],
+  "products": [],
+  "settings": {
+    "_failTransactionsEnabled": false,
+    "_locale": "en_US",
+    "_storefront": "USA"
+  },
+  "subscriptionGroups": [
+    {
+      "id": "6C83C0F8-286B-46B6-8A48-426922D4B62D",
+      "localizations": [],
+      "name": "Satchel Membership",
+      "subscriptions": [
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "9.99",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "AA011B47-2030-4502-9D2F-41FDEF7E776D",
+          "introductoryOffer": null,
+          "localizations": [
+            {
+              "locale": "en_US",
+              "displayName": "Satchel Monthly",
+              "description": "Local StoreKit testing only."
+            }
+          ],
+          "productID": "satchel.plus.monthly",
+          "recurringSubscriptionPeriod": "P1M",
+          "referenceName": "Satchel Monthly",
+          "subscriptionGroupID": "6C83C0F8-286B-46B6-8A48-426922D4B62D",
+          "type": "RecurringSubscription"
+        },
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "99.99",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "1A0EFE4B-DFEF-48C9-96EE-7C6B4AC39F68",
+          "introductoryOffer": null,
+          "localizations": [
+            {
+              "locale": "en_US",
+              "displayName": "Satchel Yearly",
+              "description": "Local StoreKit testing only."
+            }
+          ],
+          "productID": "satchel.plus.yearly",
+          "recurringSubscriptionPeriod": "P1Y",
+          "referenceName": "Satchel Yearly",
+          "subscriptionGroupID": "6C83C0F8-286B-46B6-8A48-426922D4B62D",
+          "type": "RecurringSubscription"
+        }
+      ]
+    },
+    {
+      "id": "8177B44E-8A9E-4D7D-9935-F910BD02DA56",
+      "localizations": [],
+      "name": "Provider Demo",
+      "subscriptions": [
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "9.99",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "4CEC5551-E178-4379-AC0F-A0C2FE859B04",
+          "introductoryOffer": null,
+          "localizations": [
+            {
+              "locale": "en_US",
+              "displayName": "Demo Monthly",
+              "description": "Local StoreKit testing only."
+            }
+          ],
+          "productID": "test.plan.month",
+          "recurringSubscriptionPeriod": "P1M",
+          "referenceName": "Demo Monthly",
+          "subscriptionGroupID": "8177B44E-8A9E-4D7D-9935-F910BD02DA56",
+          "type": "RecurringSubscription"
+        },
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "99.99",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "DCDE44C7-FB6C-420D-A7ED-AF19D26D6D0E",
+          "introductoryOffer": null,
+          "localizations": [
+            {
+              "locale": "en_US",
+              "displayName": "Demo Yearly",
+              "description": "Local StoreKit testing only."
+            }
+          ],
+          "productID": "test.plan.year",
+          "recurringSubscriptionPeriod": "P1Y",
+          "referenceName": "Demo Yearly",
+          "subscriptionGroupID": "8177B44E-8A9E-4D7D-9935-F910BD02DA56",
+          "type": "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version": {
+    "major": 3,
+    "minor": 0
+  }
+}

@@ -31,8 +31,8 @@ struct MembershipView: View {
                 Button(l.text("Restore purchases")) { Task { await membership.restore() } }.buttonStyle(SecondaryButton()).disabled(membership.loading)
                 Button(l.text("Manage membership")) { if let url = URL(string: "https://apps.apple.com/account/subscriptions") { openURL(url) } }.buttonStyle(SecondaryButton())
                 Text(l.text("Subscriptions renew automatically unless cancelled through your Apple account. Manage or cancel in your App Store account settings.")).font(.footnote).foregroundColor(Palette.muted)
-                NavigationLink(l.text("Privacy policy")) { LegalDocumentView(document: .privacy, l: l) }.foregroundColor(Palette.rust)
-                NavigationLink(l.text("Terms of use")) { LegalDocumentView(document: .terms, l: l) }.foregroundColor(Palette.rust)
+                NavigationLink(l.text("Privacy policy")) { LegalDocumentView(document: .privacy, l: l) }.foregroundColor(Palette.ocean)
+                NavigationLink(l.text("Terms of use")) { LegalDocumentView(document: .terms, l: l) }.foregroundColor(Palette.ocean)
             }.padding(20).frame(maxWidth: 700)
         }.modifier(Page()).toolbar(.hidden, for: .navigationBar)
     }

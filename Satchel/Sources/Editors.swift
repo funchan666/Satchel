@@ -1,5 +1,6 @@
 import SwiftUI
 import PhotosUI
+import UIKit
 
 private let dateTimeFormatter: DateFormatter = {
     let f = DateFormatter(); f.locale = Locale(identifier: "en_US_POSIX"); f.dateFormat = "yyyy-MM-dd HH:mm"; f.isLenient = false; return f
@@ -38,16 +39,21 @@ struct NewTripView: View {
                     }
                     if !store.trips.isEmpty {
                         Text(l.text("Copy a previous list")).font(.headline)
-                        Button(l.text("Suggested list")) { copyID = nil; useTemplate = false }.buttonStyle(SecondaryButton()).opacity(copyID == nil && !useTemplate ? 1 : 0.55)
-                        ForEach(store.trips) { trip in Button(trip.destination) { copyID = trip.id; useTemplate = false }.buttonStyle(SecondaryButton()).opacity(copyID == trip.id ? 1 : 0.55) }
+                        ChoiceButton(title: l.text("Suggested list"), selected: copyID == nil && !useTemplate, selectedLabel: l.text("Selected"), unselectedLabel: l.text("Not selected")) { copyID = nil; useTemplate = false }
+                        ForEach(store.trips) { trip in
+                            ChoiceButton(title: trip.destination, selected: copyID == trip.id, selectedLabel: l.text("Selected"), unselectedLabel: l.text("Not selected")) { copyID = trip.id; useTemplate = false }
+                        }
                     }
-                    if !store.template.isEmpty { Button(l.text("Common list")) { copyID = nil; useTemplate = true }.buttonStyle(SecondaryButton()).opacity(useTemplate ? 1 : 0.55) }
+                    if !store.template.isEmpty { ChoiceButton(title: l.text("Common list"), selected: useTemplate, selectedLabel: l.text("Selected"), unselectedLabel: l.text("Not selected")) { copyID = nil; useTemplate = true } }
                     PhotoSelector(label: l.text("Change cover"), cameraLabel: l.text("Camera"), cameraError: l.text("Camera access is unavailable. Check your device settings.")) { coverData = $0 }
-                    if coverData != nil { Image("CheckOn").resizable().scaledToFit().frame(width: 28, height: 28).accessibilityLabel(l.text("Selected")) }
+                    if let coverData, let image = UIImage(data: coverData) {
+                        Image(uiImage: image).resizable().scaledToFill().frame(height: 160).frame(maxWidth: .infinity).clipped().clipShape(RoundedRectangle(cornerRadius: 16))
+                            .accessibilityLabel(l.text("Change cover"))
+                    }
                     if validation { Text(l.text("Please check the destination and dates.")).foregroundColor(Palette.rust).font(.footnote) }
                     HStack {
                         Button(l.text("Cancel")) { dismiss() }.buttonStyle(SecondaryButton())
-                        Button(l.text("Create trip")) { create() }.buttonStyle(PrimaryButton())
+                        Button { create() } label: { AddActionLabel(title: l.text("Create trip")) }.buttonStyle(PrimaryButton())
                     }
                 }.padding(20).frame(maxWidth: 700)
             }.modifier(Page()).toolbar(.hidden, for: .navigationBar)
@@ -99,7 +105,7 @@ struct ItemEditor: View {
                     Button(l.text("More")) { quantity = min(999, quantity + 1) }.buttonStyle(SecondaryButton())
                 }
                 input("Where is it?", $location); input("Notes", $notes)
-                Button { needsReturn.toggle() } label: { HStack { Text(l.text("Bring back")); Spacer(); Image(needsReturn ? "CheckOn" : "CheckOff").resizable().scaledToFit().frame(width: 28, height: 28).accessibilityHidden(true) } }.buttonStyle(SecondaryButton()).accessibilityValue(needsReturn ? l.text("Selected") : l.text("Not selected"))
+                Button { needsReturn.toggle() } label: { HStack { Text(l.text("Bring back")); Spacer(); Image(needsReturn ? "SeaCheckOn" : "SeaCheckOff").resizable().scaledToFit().frame(width: 40, height: 40).accessibilityHidden(true) } }.buttonStyle(SecondaryButton()).accessibilityValue(needsReturn ? l.text("Selected") : l.text("Not selected"))
                 PhotoSelector(label: l.text("Add photo"), cameraLabel: l.text("Camera"), cameraError: l.text("Camera access is unavailable. Check your device settings.")) { data in
                     if let name = store.savePhoto(data) {
                         if let old = photo { store.removeUnusedPhotos([old]) }
