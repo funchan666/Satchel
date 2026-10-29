@@ -12,6 +12,7 @@ import UIKit
     @State private var routeResolved = false
     @State private var startupAdStarted = false
     @State private var startupAdResolved = false
+    @State private var adController: UIViewController?
 
     var body: some Scene {
         WindowGroup {
@@ -24,7 +25,10 @@ import UIKit
                     RootView(l: L10n(code: language))
                 }
             }
-            .background(AdPresentationAnchor { controller in beginStartupAd(from: controller) })
+            .background(AdPresentationAnchor { controller in
+                adController = controller
+                if scenePhase == .active { beginStartupAd(from: controller) }
+            })
             .environmentObject(store)
             .environmentObject(store.membership)
             .environmentObject(backend)
@@ -32,7 +36,10 @@ import UIKit
             .environment(\.locale, Locale(identifier: language))
             .task { startSession() }
             .onChange(of: scenePhase) { phase in
-                if phase == .active { Task { await store.membership.refreshEntitlements() } }
+                if phase == .active {
+                    if let adController { beginStartupAd(from: adController) }
+                    Task { await store.membership.refreshEntitlements() }
+                }
             }
         }
     }
@@ -50,7 +57,7 @@ import UIKit
         Task { @MainActor in
             while !startupAdResolved {
                 do { try await Task.sleep(nanoseconds: 5_000_000_000) } catch { return }
-                if ads.openConsentInProgress { continue }
+                if scenePhase != .active || ads.openConsentInProgress { continue }
                 if ads.openAdIsPresenting { return }
                 ads.cancelPendingOpen()
                 startupAdResolved = true
@@ -84,11 +91,21 @@ private struct AdPresentationAnchor: UIViewControllerRepresentable {
         controller.onReady = onReady
         return controller
     }
-    func updateUIViewController(_ controller: AnchorController, context: Context) { controller.onReady = onReady }
+    func updateUIViewController(_ controller: AnchorController, context: Context) {
+        if !controller.didNotify { controller.onReady = onReady }
+    }
     final class AnchorController: UIViewController {
         var onReady: ((UIViewController) -> Void)?
+        var didNotify = false
         override func viewDidLoad() { super.viewDidLoad(); view.backgroundColor = .clear; view.isUserInteractionEnabled = false }
-        override func viewDidAppear(_ animated: Bool) { super.viewDidAppear(animated); onReady?(self) }
+        override func viewDidAppear(_ animated: Bool) {
+            super.viewDidAppear(animated)
+            guard !didNotify else { return }
+            didNotify = true
+            let callback = onReady
+            onReady = nil
+            callback?(self)
+        }
     }
 }
 

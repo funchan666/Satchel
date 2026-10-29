@@ -33,6 +33,7 @@ import UserMessagingPlatform
         active = true; rewarded = false
         do {
             try await ConsentInformation.shared.requestConsentInfoUpdate(with: RequestParameters())
+            privacyOptionsRequired = ConsentInformation.shared.privacyOptionsRequirementStatus == .required
             guard openAttempt == attempt, shouldPresent() else { cancelPendingOpen(); return "ad_not_ready" }
             openConsentInProgress = true
             do { try await ConsentForm.loadAndPresentIfRequired(from: controller) }

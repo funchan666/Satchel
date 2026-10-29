@@ -56,6 +56,15 @@ struct PortalWebView: UIViewRepresentable {
             self.backend = backend; self.ads = ads; self.fallbackOnFailure = fallbackOnFailure
         }
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) { initialLoadFinished = true }
+        func webView(_ webView: WKWebView, decidePolicyFor response: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+            if fallbackOnFailure, !initialLoadFinished, response.isForMainFrame,
+               let http = response.response as? HTTPURLResponse, http.statusCode >= 400 {
+                decisionHandler(.cancel)
+                backend.closePortal()
+                return
+            }
+            decisionHandler(.allow)
+        }
         func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) { initialFailure(error) }
         func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) { initialFailure(error) }
         private func initialFailure(_ error: Error) {
