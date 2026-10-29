@@ -353,7 +353,7 @@ struct TemplateView: View {
                 Button { if store.saveTemplate(draft.filter { !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !$0.category.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) { dismiss() } } label: {
                     Text(l.text("Save")).frame(maxWidth: .infinity)
                 }.buttonStyle(PrimaryButton())
-            }.padding(20).frame(maxWidth: 700)
+            }.padding(20).padding(.bottom, 28).frame(maxWidth: 700)
         }.modifier(Page()).toolbar(.hidden, for: .navigationBar).onAppear {
             draft = store.template.map { var item = $0; item.name = item.suggestedNameKey.map(l.text) ?? item.name; item.category = item.suggestedCategoryKey.map(l.text) ?? item.category; return item }
         }

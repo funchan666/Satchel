@@ -31,12 +31,11 @@ struct NewTripView: View {
                     }.frame(height: 165).frame(maxWidth: .infinity).clipped().clipShape(RoundedRectangle(cornerRadius: 18))
                         .accessibilityLabel(l.text("Change cover"))
                     PhotoSelector(label: l.text("Change cover"), cameraLabel: l.text("Camera"), cameraError: l.text("Camera access is unavailable. Check your device settings.")) { coverData = $0 }
-                        .padding(10).modifier(SatchelGlass(tint: Palette.cream.opacity(0.28), cornerRadius: 18))
-                    VStack(alignment: .leading, spacing: 15) {
+                    VStack(alignment: .leading, spacing: 10) {
                         field(l.text("Destination"), text: $destination)
                         field(l.text("Start date") + " · YYYY-MM-DD", text: $startText)
                         field(l.text("End date") + " · YYYY-MM-DD", text: $endText)
-                    }.padding(16).modifier(SatchelGlass(tint: Palette.cream.opacity(0.22), cornerRadius: 20))
+                    }
                     Text(l.text("Trip type")).font(.system(size: 22, design: .serif))
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
@@ -56,11 +55,14 @@ struct NewTripView: View {
                     if !store.template.isEmpty { ChoiceButton(title: l.text("Common list"), selected: useTemplate, selectedLabel: l.text("Selected"), unselectedLabel: l.text("Not selected")) { copyID = nil; useTemplate = true } }
                     if validation { Text(l.text("Please check the destination and dates.")).foregroundColor(Palette.rust).font(.footnote) }
                     Button { create() } label: { AddActionLabel(title: l.text("Create trip")).frame(maxWidth: .infinity) }.buttonStyle(PrimaryButton())
-                }.padding(20).frame(maxWidth: 700)
+                }.padding(20).padding(.bottom, 28).frame(maxWidth: 700)
         }.modifier(Page()).toolbar(.hidden, for: .navigationBar)
     }
     private func field(_ title: String, text: Binding<String>) -> some View {
-        VStack(alignment: .leading, spacing: 7) { Text(title).font(.subheadline.weight(.semibold)); TextField(title, text: text).modifier(FieldStyle()) }
+        VStack(alignment: .leading, spacing: 7) {
+            Text(title).font(.caption.weight(.semibold)).foregroundColor(Palette.muted)
+            TextField(title, text: text).font(.body).modifier(FieldStyle())
+        }.padding(12).modifier(SatchelGlass(tint: Palette.cream.opacity(0.25), cornerRadius: 18))
     }
     private func create() {
         guard !destination.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
@@ -124,7 +126,7 @@ struct ItemEditor: View {
                     if confirmingItemDelete { HStack { Button(l.text("Cancel")) { confirmingItemDelete = false }.buttonStyle(SecondaryButton()); Button(l.text("Delete")) { remove() }.buttonStyle(PrimaryButton()) } }
                     else { Button(l.text("Delete")) { confirmingItemDelete = true }.buttonStyle(SecondaryButton()) }
                 }
-            }.padding(20).frame(maxWidth: 700)
+            }.padding(20).padding(.bottom, 28).frame(maxWidth: 700)
         }.modifier(Page()).toolbar(.hidden, for: .navigationBar).onAppear {
             if let item = existing { name = item.suggestedNameKey.map(l.text) ?? item.name; category = item.suggestedCategoryKey.map(l.text) ?? item.category; quantity = item.quantity; location = item.location; notes = item.notes; needsReturn = item.needsReturn; photo = item.photo }
         }
@@ -183,7 +185,7 @@ struct EntryEditor: View {
                     if confirmingDelete { HStack { Button(l.text("Cancel")) { confirmingDelete = false }.buttonStyle(SecondaryButton()); Button(l.text("Delete")) { remove() }.buttonStyle(PrimaryButton()) } }
                     else { Button(l.text("Delete")) { confirmingDelete = true }.buttonStyle(SecondaryButton()) }
                 }
-            }.padding(20).frame(maxWidth: 700)
+            }.padding(20).padding(.bottom, 28).frame(maxWidth: 700)
         }.modifier(Page()).toolbar(.hidden, for: .navigationBar).onAppear { if let entry = existing { text = entry.text; date = entry.date; dateText = dateTimeFormatter.string(from: entry.date); photos = entry.photos } }
     }
     private func save() {
@@ -227,7 +229,7 @@ struct TripEditor: View {
                     Text(l.text("Delete this trip and its records?"))
                     HStack { Button(l.text("Cancel")) { deleting = false }.buttonStyle(SecondaryButton()); Button(l.text("Delete")) { delete() }.buttonStyle(PrimaryButton()) }
                 } else { Button(l.text("Delete trip")) { deleting = true }.buttonStyle(SecondaryButton()) }
-            }.padding(20).frame(maxWidth: 700)
+            }.padding(20).padding(.bottom, 28).frame(maxWidth: 700)
         }.modifier(Page()).toolbar(.hidden, for: .navigationBar).onAppear {
             if let trip = store.trips.first(where: { $0.id == tripID }) { destination = trip.destination; start = dateFormatter.string(from: trip.start); end = dateFormatter.string(from: trip.end) }
         }

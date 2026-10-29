@@ -179,7 +179,7 @@ struct TripDetail: View {
                         Button(l.text("Delete")) { if var current = trip { current.packingPhotos.removeAll { $0 == selectedPhoto }; current.packingPhotoNotes.removeValue(forKey: selectedPhoto); if store.update(current) { store.removeUnusedPhotos([selectedPhoto]); editingPhoto = false } } }.buttonStyle(PrimaryButton())
                     }
                 }
-            }.padding(20).frame(maxWidth: 700)
+            }.padding(20).padding(.bottom, 28).frame(maxWidth: 700)
         }.modifier(Page())
     }
     private var lessonEditor: some View {
@@ -190,7 +190,7 @@ struct TripDetail: View {
             TextEditor(text: $lessonDraft).scrollContentBackground(.hidden).frame(minHeight: 180).padding(14)
                 .modifier(SatchelGlass(tint: Palette.cream.opacity(0.3), cornerRadius: 20))
             HStack { Button(l.text("Cancel")) { editingLessons = false }.buttonStyle(SecondaryButton()); Button(l.text("Save")) { if var current = trip { current.lessons = lessonDraft; if store.update(current) { editingLessons = false } } }.buttonStyle(PrimaryButton()) }
-        }.padding(20).frame(maxWidth: 700) }.modifier(Page())
+        }.padding(20).padding(.bottom, 28).frame(maxWidth: 700) }.modifier(Page())
     }
     private func toggle(_ id: UUID) {
         guard var current = trip, let i = current.items.firstIndex(where: { $0.id == id }) else { return }

@@ -36,12 +36,26 @@ struct BackTagButton: View {
         }.buttonStyle(.plain).accessibilityLabel(label)
     }
 }
+/// Raster artwork supplies the surface; the rounded clip only defines its hit-area silhouette.
+struct PaperSurface: ViewModifier {
+    let artwork: String
+    var radius: CGFloat = 16
+    func body(content: Content) -> some View {
+        content.background {
+            GeometryReader { geometry in
+                Image(artwork).resizable().scaledToFill()
+                    .frame(width: geometry.size.width, height: geometry.size.height).clipped()
+            }.clipShape(RoundedRectangle(cornerRadius: radius, style: .continuous))
+        }
+    }
+}
 struct PrimaryButton: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
     func makeBody(configuration: Configuration) -> some View {
         configuration.label.font(.system(.subheadline, design: .rounded).weight(.semibold)).foregroundColor(.white)
-            .padding(.horizontal, 25).padding(.vertical, 17)
-            .background { Image("ActionPrimary").resizable().interpolation(.high).opacity(configuration.isPressed ? 0.78 : 1) }
+            .multilineTextAlignment(.center).padding(.horizontal, 22).padding(.vertical, 13)
+            .frame(minHeight: 50).modifier(PaperSurface(artwork: "ButtonOcean", radius: 16))
+            .opacity(configuration.isPressed ? 0.8 : 1)
             .opacity(isEnabled ? 1 : 0.55)
     }
 }
@@ -59,14 +73,16 @@ struct SecondaryButton: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
     func makeBody(configuration: Configuration) -> some View {
         configuration.label.font(.system(.subheadline, design: .rounded).weight(.semibold)).foregroundColor(Palette.ink)
-            .padding(.horizontal, 16).padding(.vertical, 12)
-            .background { Image("ActionSecondary").resizable().interpolation(.high).opacity(configuration.isPressed ? 0.8 : 0.65) }
+            .multilineTextAlignment(.center).padding(.horizontal, 17).padding(.vertical, 12)
+            .frame(minHeight: 48).modifier(PaperSurface(artwork: "ButtonPaper", radius: 14))
+            .opacity(configuration.isPressed ? 0.75 : 1)
             .opacity(isEnabled ? 1 : 0.55)
     }
 }
 struct FieldStyle: ViewModifier {
     func body(content: Content) -> some View {
-        content.padding(15).background(Palette.cream.opacity(0.9), in: RoundedRectangle(cornerRadius: 14))
+        content.padding(.horizontal, 15).padding(.vertical, 13).frame(minHeight: 48)
+            .modifier(PaperSurface(artwork: "ButtonPaper", radius: 14))
     }
 }
 struct EditorialBanner: View {
@@ -100,9 +116,9 @@ struct PhotoSelector: View {
     @State private var cameraUnavailable = false
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-          HStack {
-            PhotosPicker(selection: $selection, matching: .images) { Text(label) }.buttonStyle(SecondaryButton())
-            if UIImagePickerController.isSourceTypeAvailable(.camera) { Button(cameraLabel) { requestCamera() }.buttonStyle(SecondaryButton()) }
+          HStack(spacing: 10) {
+            PhotosPicker(selection: $selection, matching: .images) { Text(label).frame(maxWidth: .infinity) }.buttonStyle(SecondaryButton())
+            if UIImagePickerController.isSourceTypeAvailable(.camera) { Button { requestCamera() } label: { Text(cameraLabel).frame(maxWidth: .infinity) }.buttonStyle(SecondaryButton()) }
           }
           if cameraUnavailable { Text(cameraError).font(.footnote).foregroundColor(Palette.rust) }
         }.sheet(isPresented: $camera) { CameraCapture(onData: onData) }
@@ -163,11 +179,11 @@ struct ChoiceButton: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 6) {
-                if selected { Image("FlatCheckOn").resizable().scaledToFit().frame(width: 32, height: 32).accessibilityHidden(true) }
+                if selected { Image("FlatCheckOn").resizable().scaledToFit().frame(width: 24, height: 24).accessibilityHidden(true) }
                 Text(title).font(.system(size: 15, weight: selected ? .bold : .semibold))
             }.foregroundColor(Palette.ink)
-                .padding(.horizontal, 16).padding(.vertical, 12)
-                .modifier(SatchelGlass(tint: selected ? Palette.ocean.opacity(0.20) : Palette.paper.opacity(0.12), interactive: true, cornerRadius: 12, fallback: selected ? Palette.seaTint : Palette.cream))
+                .padding(.horizontal, 16).padding(.vertical, 12).frame(minHeight: 48)
+                .modifier(PaperSurface(artwork: selected ? "ButtonSelected" : "ButtonPaper", radius: 14))
         }.buttonStyle(.plain).accessibilityValue(selected ? selectedLabel : unselectedLabel)
     }
 }
