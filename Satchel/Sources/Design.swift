@@ -23,9 +23,9 @@ struct Page: ViewModifier {
 struct PrimaryButton: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label.font(.system(size: 15, weight: .semibold)).foregroundColor(.white)
+        configuration.label.font(.system(.subheadline, design: .rounded).weight(.semibold)).foregroundColor(.white)
             .padding(.horizontal, 25).padding(.vertical, 17)
-            .background { Image("SeaPrimary").resizable().interpolation(.high).opacity(configuration.isPressed ? 0.78 : 1) }
+            .background { Image("ActionPrimary").resizable().interpolation(.high).opacity(configuration.isPressed ? 0.78 : 1) }
             .opacity(isEnabled ? 1 : 0.55)
     }
 }
@@ -42,16 +42,15 @@ struct AddActionLabel: View {
 struct SecondaryButton: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label.font(.system(size: 15, weight: .semibold)).foregroundColor(Palette.ink)
+        configuration.label.font(.system(.subheadline, design: .rounded).weight(.semibold)).foregroundColor(Palette.ink)
             .padding(.horizontal, 16).padding(.vertical, 12)
-            .background { Image("SeaSecondary").resizable().interpolation(.high).opacity(configuration.isPressed ? 0.8 : 0.65) }
-            .modifier(SatchelGlass(tint: Palette.paper.opacity(configuration.isPressed ? 0.28 : 0.12), interactive: true, cornerRadius: 14))
+            .background { Image("ActionSecondary").resizable().interpolation(.high).opacity(configuration.isPressed ? 0.8 : 0.65) }
             .opacity(isEnabled ? 1 : 0.55)
     }
 }
 struct FieldStyle: ViewModifier {
     func body(content: Content) -> some View {
-        content.padding(13).modifier(SatchelGlass(tint: Palette.paper.opacity(0.3), cornerRadius: 14))
+        content.padding(15).background(Palette.cream.opacity(0.9), in: RoundedRectangle(cornerRadius: 14))
     }
 }
 struct EditorialTitle: View {
@@ -62,6 +61,15 @@ struct EditorialTitle: View {
             Text(title).font(.system(size: 32, weight: .regular, design: .serif))
             if !subtitle.isEmpty { Text(subtitle).font(.subheadline).foregroundColor(Palette.muted) }
         }.frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+struct EditorialBanner: View {
+    let artwork: String
+    var height: CGFloat = 110
+    var body: some View {
+        GeometryReader { geometry in
+            Image(artwork).resizable().scaledToFill().frame(width: geometry.size.width, height: geometry.size.height).clipped().accessibilityHidden(true)
+        }.frame(height: height).clipShape(RoundedRectangle(cornerRadius: 18))
     }
 }
 struct PhotoView: View {
@@ -149,7 +157,7 @@ struct ChoiceButton: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 6) {
-                if selected { Image("SeaCheckOn").resizable().scaledToFit().frame(width: 32, height: 32).accessibilityHidden(true) }
+                if selected { Image("FlatCheckOn").resizable().scaledToFit().frame(width: 32, height: 32).accessibilityHidden(true) }
                 Text(title).font(.system(size: 15, weight: selected ? .bold : .semibold))
             }.foregroundColor(Palette.ink)
                 .padding(.horizontal, 16).padding(.vertical, 12)

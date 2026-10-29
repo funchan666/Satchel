@@ -10,7 +10,7 @@ struct MembershipView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 Button(l.text("Me")) { dismiss() }.buttonStyle(SecondaryButton())
-                Image("MembershipArt").resizable().scaledToFit().frame(maxHeight: 160).frame(maxWidth: .infinity).accessibilityHidden(true)
+                EditorialBanner(artwork: "GuideHero", height: 170)
                 EditorialTitle(title: l.text("Satchel Membership"), subtitle: l.text("More room for every journey."))
                 VStack(alignment: .leading, spacing: 10) {
                     Text(l.text("Free: up to 3 trips and 30 photos. Membership: unlimited trips and photos."))
@@ -19,11 +19,11 @@ struct MembershipView: View {
                     .modifier(SatchelGlass(tint: Palette.paper.opacity(0.16), cornerRadius: 16))
                 if membership.isMember { Text(l.text("Your membership is active.")).foregroundColor(Palette.olive) }
                 ForEach(membership.products, id: \.id) { product in
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(l.text(product.id == MembershipStore.monthlyID ? "Monthly membership" : "Yearly membership")).font(.system(size: 21, design: .serif))
-                        Text(product.displayPrice + " / " + l.text(product.id == MembershipStore.monthlyID ? "month" : "year")).font(.headline)
-                        Button(l.text("Subscribe")) { Task { await membership.purchase(product) } }.buttonStyle(PrimaryButton()).disabled(membership.loading)
-                    }.frame(maxWidth: .infinity, alignment: .leading).padding(16).background(Palette.cream, in: RoundedRectangle(cornerRadius: 14))
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text(l.text(product.id == MembershipStore.monthlyID ? "Monthly membership" : "Yearly membership")).font(.system(size: 22, design: .serif))
+                        Text(product.displayPrice + " / " + l.text(product.id == MembershipStore.monthlyID ? "month" : "year")).font(.title3.weight(.semibold)).foregroundColor(Palette.ocean)
+                        Button { Task { await membership.purchase(product) } } label: { Text(l.text("Subscribe")).frame(maxWidth: .infinity) }.buttonStyle(PrimaryButton()).disabled(membership.loading)
+                    }.frame(maxWidth: .infinity, alignment: .leading).padding(18).modifier(SatchelGlass(tint: Palette.cream.opacity(0.2), cornerRadius: 18))
                 }
                 if membership.loading { Text(l.text("Loading…")).foregroundColor(Palette.muted) }
                 if let message = membership.message { Text(l.text(message)).font(.footnote).foregroundColor(Palette.rust) }

@@ -23,38 +23,42 @@ struct NewTripView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: 20) {
                     ErrorNotice(l: l)
-                    EditorialTitle(title: l.text("New Trip"))
-                    field(l.text("Destination"), text: $destination)
-                    field(l.text("Start date") + " · YYYY-MM-DD", text: $startText)
-                    field(l.text("End date") + " · YYYY-MM-DD", text: $endText)
-                    Text(l.text("Trip type")).font(.headline)
+                    HStack(alignment: .top) {
+                        EditorialTitle(title: l.text("New Trip"))
+                        Button(l.text("Cancel")) { dismiss() }.buttonStyle(SecondaryButton())
+                    }
+                    Group {
+                        if let coverData, let image = UIImage(data: coverData) { Image(uiImage: image).resizable().scaledToFill() }
+                        else { Image("SeaJourneyHero").resizable().scaledToFill() }
+                    }.frame(height: 165).frame(maxWidth: .infinity).clipped().clipShape(RoundedRectangle(cornerRadius: 18))
+                        .accessibilityLabel(l.text("Change cover"))
+                    PhotoSelector(label: l.text("Change cover"), cameraLabel: l.text("Camera"), cameraError: l.text("Camera access is unavailable. Check your device settings.")) { coverData = $0 }
+                    VStack(alignment: .leading, spacing: 15) {
+                        field(l.text("Destination"), text: $destination)
+                        field(l.text("Start date") + " · YYYY-MM-DD", text: $startText)
+                        field(l.text("End date") + " · YYYY-MM-DD", text: $endText)
+                    }.padding(16).modifier(SatchelGlass(tint: Palette.cream.opacity(0.22), cornerRadius: 20))
+                    Text(l.text("Trip type")).font(.system(size: 22, design: .serif))
                     ScrollView(.horizontal, showsIndicators: false) {
-                        SatchelGlassGroup {
-                            HStack(spacing: 8) { ForEach(TravelKind.allCases, id: \.self) { value in
+                        HStack(spacing: 8) {
+                            ForEach(TravelKind.allCases, id: \.self) { value in
                                 ChoiceButton(title: l.text(value.rawValue.capitalized), selected: kind == value, selectedLabel: l.text("Selected"), unselectedLabel: l.text("Not selected")) { kind = value }
-                            } }
+                                    .fixedSize(horizontal: true, vertical: false)
+                            }
                         }
                     }
                     if !store.trips.isEmpty {
-                        Text(l.text("Copy a previous list")).font(.headline)
+                        Text(l.text("Copy a previous list")).font(.system(size: 22, design: .serif))
                         ChoiceButton(title: l.text("Suggested list"), selected: copyID == nil && !useTemplate, selectedLabel: l.text("Selected"), unselectedLabel: l.text("Not selected")) { copyID = nil; useTemplate = false }
                         ForEach(store.trips) { trip in
                             ChoiceButton(title: trip.destination, selected: copyID == trip.id, selectedLabel: l.text("Selected"), unselectedLabel: l.text("Not selected")) { copyID = trip.id; useTemplate = false }
                         }
                     }
                     if !store.template.isEmpty { ChoiceButton(title: l.text("Common list"), selected: useTemplate, selectedLabel: l.text("Selected"), unselectedLabel: l.text("Not selected")) { copyID = nil; useTemplate = true } }
-                    PhotoSelector(label: l.text("Change cover"), cameraLabel: l.text("Camera"), cameraError: l.text("Camera access is unavailable. Check your device settings.")) { coverData = $0 }
-                    if let coverData, let image = UIImage(data: coverData) {
-                        Image(uiImage: image).resizable().scaledToFill().frame(height: 160).frame(maxWidth: .infinity).clipped().clipShape(RoundedRectangle(cornerRadius: 16))
-                            .accessibilityLabel(l.text("Change cover"))
-                    }
                     if validation { Text(l.text("Please check the destination and dates.")).foregroundColor(Palette.rust).font(.footnote) }
-                    HStack {
-                        Button(l.text("Cancel")) { dismiss() }.buttonStyle(SecondaryButton())
-                        Button { create() } label: { AddActionLabel(title: l.text("Create trip")) }.buttonStyle(PrimaryButton())
-                    }
+                    Button { create() } label: { AddActionLabel(title: l.text("Create trip")).frame(maxWidth: .infinity) }.buttonStyle(PrimaryButton())
                 }.padding(20).frame(maxWidth: 700)
             }.modifier(Page()).toolbar(.hidden, for: .navigationBar)
         }
@@ -97,7 +101,9 @@ struct ItemEditor: View {
             VStack(alignment: .leading, spacing: 15) {
                 ErrorNotice(l: l)
                 EditorialTitle(title: l.text("Add item"))
-                input("Item name", $name); input("Category", $category)
+                EditorialBanner(artwork: "PackingEditorial")
+                VStack(alignment: .leading, spacing: 14) { input("Item name", $name); input("Category", $category) }
+                    .padding(14).modifier(SatchelGlass(tint: Palette.cream.opacity(0.2), cornerRadius: 18))
                 HStack {
                     Text(l.text("Quantity")); Spacer()
                     Button(l.text("Less")) { quantity = max(1, quantity - 1) }.buttonStyle(SecondaryButton())
@@ -105,7 +111,7 @@ struct ItemEditor: View {
                     Button(l.text("More")) { quantity = min(999, quantity + 1) }.buttonStyle(SecondaryButton())
                 }
                 input("Where is it?", $location); input("Notes", $notes)
-                Button { needsReturn.toggle() } label: { HStack { Text(l.text("Bring back")); Spacer(); Image(needsReturn ? "SeaCheckOn" : "SeaCheckOff").resizable().scaledToFit().frame(width: 40, height: 40).accessibilityHidden(true) } }.buttonStyle(SecondaryButton()).accessibilityValue(needsReturn ? l.text("Selected") : l.text("Not selected"))
+                Button { needsReturn.toggle() } label: { HStack { Text(l.text("Bring back")); Spacer(); Image(needsReturn ? "FlatCheckOn" : "FlatCheckOff").resizable().scaledToFit().frame(width: 40, height: 40).accessibilityHidden(true) } }.buttonStyle(SecondaryButton()).accessibilityValue(needsReturn ? l.text("Selected") : l.text("Not selected"))
                 PhotoSelector(label: l.text("Add photo"), cameraLabel: l.text("Camera"), cameraError: l.text("Camera access is unavailable. Check your device settings.")) { data in
                     if let name = store.savePhoto(data) {
                         if let old = photo { store.removeUnusedPhotos([old]) }
@@ -158,6 +164,7 @@ struct EntryEditor: View {
             VStack(alignment: .leading, spacing: 17) {
                 ErrorNotice(l: l)
                 EditorialTitle(title: l.text("Add a memory"))
+                EditorialBanner(artwork: "JournalEditorial")
                 Text(l.text("Date")).font(.headline)
                 TextField("YYYY-MM-DD HH:mm", text: $dateText).modifier(FieldStyle())
                 if invalidDate { Text(l.text("Please check the date and time.")).foregroundColor(Palette.rust).font(.footnote) }
@@ -206,6 +213,7 @@ struct TripEditor: View {
             VStack(alignment: .leading, spacing: 16) {
                 ErrorNotice(l: l)
                 EditorialTitle(title: l.text("Edit trip"))
+                EditorialBanner(artwork: "SeaJourneyHero")
                 labelField("Destination", $destination)
                 labelField("Start date", $start)
                 labelField("End date", $end)

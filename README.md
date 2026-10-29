@@ -10,7 +10,7 @@ A local-first SwiftUI travel journal and packing companion. The Xcode project is
 
 Only `Satchel/Assets.xcassets` and `Satchel/Resources` are configured as app resources. The material folders are not included in the app target. The original artwork was created using the host-native image tool for this project, including the travel cover, sign-in scene, satchel illustration, paper ticket, app icon, and navigation illustrations.
 
-The A-side uses the selected Sea Window icon, an original coastal hero, and custom blue-and-ivory button and navigation artwork. Journeys and journal entries can be searched by destination or memory text, memories can be added from the journal overview, packing can be filtered to remaining items, and the new-trip form previews the chosen cover. These changes preserve the existing on-device trip data and the separate online-service entry.
+The A-side uses the selected Sea Window icon, an original coastal hero, and custom blue-and-ivory button and navigation artwork. Journeys and journal entries can be searched by destination or memory text, memories can be added from the journal overview, packing can be filtered to remaining items, and the new-trip form previews the chosen cover. These changes preserve the existing on-device trip data and the separate online-service entry. The Travel guide is an offline, locally scripted feature with prepared topic-based responses; it does not call an AI service or provide live information.
 
 ## Online service
 

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A17C00000000000000000003 /* TravelGuideView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17C00000000000000000004 /* TravelGuideView.swift */; };
 		A17C00000000000000000001 /* PortalSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17C00000000000000000002 /* PortalSocket.swift */; };
 		F2F147CC51D645A19E405A01 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F2F147CC51D645A19E405A02 /* LaunchScreen.storyboard */; };
 		0212EB21A9F4DBB1B88EE39D /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4AFF84527D5758C56A11C58 /* LoginView.swift */; };
@@ -32,6 +33,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A17C00000000000000000004 /* TravelGuideView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TravelGuideView.swift; sourceTree = "<group>"; };
 		A17C00000000000000000002 /* PortalSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalSocket.swift; sourceTree = "<group>"; };
 		F2F147CC51D645A19E405A02 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2CF659EAC1B3A658E4A38EE5 /* TripDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripDetail.swift; sourceTree = "<group>"; };
@@ -97,6 +99,7 @@
 				6C8C0B0E0BB120EA58F50CC0 /* MembershipView.swift */,
 				81E4F44A6F4747AC373C75F5 /* Models.swift */,
 				B21F036E615A68F69BD52FCD /* RootView.swift */,
+				A17C00000000000000000004 /* TravelGuideView.swift */,
 				397E3B187B503A7ED80FA10D /* SatchelApp.swift */,
 				2CF659EAC1B3A658E4A38EE5 /* TripDetail.swift */,
 				FBAD46369FB8C311332BF129 /* Portal */,
@@ -230,6 +233,7 @@
 				F62C190EE686C6D5754CBF34 /* PortalView.swift in Sources */,
 				CD84314905E1745B86DB2F9C /* RewardedAds.swift in Sources */,
 				1F115A0E7A627A43186448A4 /* RootView.swift in Sources */,
+				A17C00000000000000000003 /* TravelGuideView.swift in Sources */,
 				70943FDB8E04E8DE26E6C5C6 /* SatchelApp.swift in Sources */,
 				9B4AD0FCD42C61F01300A3E2 /* TravelExport.swift in Sources */,
 				5E98457623F66D944BDDA3CE /* TripDetail.swift in Sources */,

@@ -63,7 +63,7 @@ struct TripDetail: View {
     private func sectionButton(_ title: String, index: Int) -> some View {
         Button { if reduceMotion { section = index } else { withAnimation(.easeInOut(duration: 0.18)) { section = index } } } label: {
             HStack(spacing: 6) {
-                Image(index == 0 ? "SeaTrips" : "SeaJournal").resizable().scaledToFit().frame(width: 36, height: 36).accessibilityHidden(true)
+                Image(index == 0 ? "NavTrips" : "SeaJournal").resizable().scaledToFit().frame(width: 36, height: 36).accessibilityHidden(true)
                 Text(l.text(title)).font(.headline)
             }.frame(maxWidth: .infinity).padding(.vertical, 14).foregroundColor(Palette.ink)
                 .modifier(SatchelGlass(tint: section == index ? Palette.ocean.opacity(0.20) : Palette.paper.opacity(0.12), interactive: true, cornerRadius: 12, fallback: section == index ? Palette.seaTint : Palette.cream))
@@ -102,7 +102,7 @@ struct TripDetail: View {
                     ForEach(visible.filter { ($0.suggestedCategoryKey.map(l.text) ?? $0.category) == category }) { item in
                         HStack(spacing: 12) {
                             Button { toggle(item.id) } label: {
-                                Image((returning ? item.returned : item.packed) ? "SeaCheckOn" : "SeaCheckOff").resizable().scaledToFit().frame(width: 44, height: 44).frame(width: 44, height: 44)
+                                Image((returning ? item.returned : item.packed) ? "FlatCheckOn" : "FlatCheckOff").resizable().scaledToFit().frame(width: 44, height: 44).frame(width: 44, height: 44)
                             }.buttonStyle(.plain).disabled(returning && !item.needsReturn).accessibilityLabel(item.suggestedNameKey.map(l.text) ?? item.name).accessibilityValue((returning ? item.returned : item.packed) ? l.text("Selected") : l.text("Not selected"))
                             Button { editingItem = item; showItem = true } label: {
                                 VStack(alignment: .leading, spacing: 4) {

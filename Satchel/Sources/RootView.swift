@@ -14,23 +14,23 @@ struct RootView: View {
                 ZStack {
                     TripsView(l: l, creating: $creating).opacity(tab == 0 ? 1 : 0).allowsHitTesting(tab == 0).accessibilityHidden(tab != 0)
                     JournalOverview(l: l, creating: $creating).opacity(tab == 1 ? 1 : 0).allowsHitTesting(tab == 1).accessibilityHidden(tab != 1)
-                    SettingsView(l: l).opacity(tab == 2 ? 1 : 0).allowsHitTesting(tab == 2).accessibilityHidden(tab != 2)
+                    TravelGuideView(l: l, isActive: tab == 2).opacity(tab == 2 ? 1 : 0).allowsHitTesting(tab == 2).accessibilityHidden(tab != 2)
+                    SettingsView(l: l).opacity(tab == 3 ? 1 : 0).allowsHitTesting(tab == 3).accessibilityHidden(tab != 3)
                 }.frame(maxWidth: .infinity, maxHeight: .infinity)
                 HStack(spacing: 0) {
-                    ForEach(Array(["Trips", "Journal", "Me"].enumerated()), id: \.offset) { index, title in
+                    ForEach(Array(["Trips", "Journal", "Travel guide", "Me"].enumerated()), id: \.offset) { index, title in
                         Button { tab = index } label: {
-                            VStack(spacing: 2) {
-                                Image(["SeaTrips", "SeaJournal", "SeaMe"][index]).resizable().scaledToFit().frame(width: index == 2 ? 46 : 38, height: 38).accessibilityHidden(true)
-                                Text(l.text(title)).font(.system(.caption, design: .rounded).weight(tab == index ? .bold : .medium)).multilineTextAlignment(.center)
-                            }.foregroundColor(tab == index ? Palette.ocean : Palette.muted).frame(maxWidth: .infinity).frame(minHeight: 64)
-                                .background { if tab == index { Image("SeaSecondary").resizable().interpolation(.high).opacity(0.68).accessibilityHidden(true) } }
-                                .contentShape(Rectangle())
-                        }.buttonStyle(.plain).accessibilityValue(tab == index ? l.text("Selected") : l.text("Not selected"))
+                            Image(["NavTrips", "SeaJournal", "NavGuide", "NavMe"][index])
+                                .resizable().scaledToFit().frame(width: 45, height: 45)
+                                .opacity(tab == index ? 1 : 0.52)
+                                .scaleEffect(tab == index ? 1.08 : 0.94)
+                                .frame(maxWidth: .infinity, minHeight: 58).contentShape(Rectangle())
+                        }.buttonStyle(.plain).accessibilityLabel(l.text(title))
+                            .accessibilityValue(tab == index ? l.text("Selected") : l.text("Not selected"))
                     }
                 }
-                .padding(.horizontal, 8)
-                .modifier(SatchelGlass(tint: Palette.paper.opacity(0.12), interactive: true, cornerRadius: 22))
-                .padding(.horizontal, 16).padding(.vertical, 8)
+                .padding(.horizontal, 10).modifier(SatchelGlass(tint: Palette.paper.opacity(0.15), interactive: true, cornerRadius: 25))
+                .padding(.horizontal, 20).padding(.vertical, 8)
             }.modifier(Page())
             .toolbar(.hidden, for: .navigationBar)
             .sheet(isPresented: $creating) { NewTripView(l: l) }
@@ -89,14 +89,17 @@ struct TripsView: View {
         }
     }
     private var welcome: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(l.text("Your next journey starts here.")).font(.system(size: 31, design: .serif)).foregroundColor(.white).fixedSize(horizontal: false, vertical: true)
-            Button { creating = true } label: { AddActionLabel(title: l.text("New Trip")) }.buttonStyle(PrimaryButton()).padding(.top, 3)
-        }.padding(22).frame(maxWidth: .infinity, minHeight: 350, alignment: .bottomLeading)
+        VStack(alignment: .leading, spacing: 14) {
+            Spacer(minLength: 160)
+            VStack(alignment: .leading, spacing: 12) {
+                Text(l.text("Your next journey starts here.")).font(.system(size: 27, design: .serif)).fixedSize(horizontal: false, vertical: true)
+                Button { creating = true } label: { AddActionLabel(title: l.text("New Trip")) }.buttonStyle(PrimaryButton())
+            }.padding(18).frame(maxWidth: .infinity, alignment: .leading)
+                .modifier(SatchelGlass(tint: Palette.cream.opacity(0.55), cornerRadius: 18))
+        }.padding(14).frame(maxWidth: .infinity, minHeight: 335, alignment: .bottomLeading)
             .background {
                 GeometryReader { geometry in
-                    Image("SeaJourneyHero").resizable().scaledToFill().frame(width: geometry.size.width, height: geometry.size.height).clipped()
-                        .overlay(Palette.ink.opacity(0.62)).accessibilityHidden(true)
+                    Image("SeaJourneyHero").resizable().scaledToFill().frame(width: geometry.size.width, height: geometry.size.height).clipped().accessibilityHidden(true)
                 }
             }.clipShape(RoundedRectangle(cornerRadius: 22))
     }
@@ -178,11 +181,11 @@ struct JournalOverview: View {
                     }
                 }
                 if trips.isEmpty {
-                    Image("SeaJournal").resizable().scaledToFit().frame(maxWidth: 250).frame(maxWidth: .infinity).accessibilityHidden(true)
+                    journalCover
                     Text(l.text("Your memories start here.")).font(.system(size: 25, design: .serif))
                     Button { creating = true } label: { AddActionLabel(title: l.text("New Trip")) }.buttonStyle(PrimaryButton())
                 } else if matches.isEmpty {
-                    Image("SeaJournal").resizable().scaledToFit().frame(maxWidth: 200).frame(maxWidth: .infinity).accessibilityHidden(true)
+                    journalCover
                     Text(l.text(query.isEmpty ? "Your memories start here." : "No matching memories")).font(.system(size: 23, design: .serif))
                     if query.isEmpty, trips.count == 1, let trip = trips.first { Button { selectedTrip = trip } label: { AddActionLabel(title: l.text("Add a memory")) }.buttonStyle(PrimaryButton()) }
                 } else {
@@ -192,6 +195,9 @@ struct JournalOverview: View {
                 }
             }.padding(.horizontal, 20).padding(.top, 16).padding(.bottom, 28).frame(maxWidth: 720)
         }.sheet(item: $selectedTrip) { trip in EntryEditor(l: l, tripID: trip.id, existing: nil) }
+    }
+    private var journalCover: some View {
+        Image("JournalEditorial").resizable().scaledToFill().frame(height: 205).frame(maxWidth: .infinity).clipped().clipShape(RoundedRectangle(cornerRadius: 20)).accessibilityHidden(true)
     }
     private func memoryCard(_ trip: Trip) -> some View {
         let term = query.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -226,7 +232,7 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 24) {
                 HStack(alignment: .center) {
                     EditorialTitle(title: l.text("Me"), subtitle: l.text("Your travel journal stays on this device."))
-                    Image("SeaTrips").resizable().scaledToFit().frame(width: 94, height: 74).accessibilityHidden(true)
+                    Image("NavMe").resizable().scaledToFit().frame(width: 86, height: 74).accessibilityHidden(true)
                 }
                 VStack(alignment: .leading, spacing: 12) {
                     Text(l.text("Your collection")).font(.system(size: 22, design: .serif))
@@ -234,10 +240,13 @@ struct SettingsView: View {
                         collectionCount(store.trips.count, l.text("Trips"))
                         collectionCount(store.trips.reduce(0) { $0 + $1.entries.count }, l.text("Memories"))
                         collectionCount(store.referencedPhotos(in: store.trips).count, l.text("Photos"))
-                        Spacer(minLength: 0)
                     }
-                }.frame(maxWidth: .infinity, alignment: .leading).padding(18)
-                    .modifier(SatchelGlass(tint: Palette.paper.opacity(0.18), cornerRadius: 20))
+                }.foregroundColor(.white).frame(maxWidth: .infinity, minHeight: 145, alignment: .leading).padding(18)
+                    .background {
+                        GeometryReader { geometry in
+                            Image("SeaJourneyHero").resizable().scaledToFill().frame(width: geometry.size.width, height: geometry.size.height).clipped().overlay(Palette.ink.opacity(0.70)).accessibilityHidden(true)
+                        }
+                    }.clipShape(RoundedRectangle(cornerRadius: 20))
                 VStack(alignment: .leading, spacing: 0) {
                     Text(l.text("Your Satchel")).font(.system(size: 22, design: .serif)).padding(.bottom, 12)
                     VStack(spacing: 0) {
@@ -263,7 +272,7 @@ struct SettingsView: View {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 135), spacing: 8)], spacing: 8) {
                         ForEach(options, id: \.0) { option in
                             Button { language = option.0 } label: {
-                                HStack(spacing: 6) { Text(option.1).font(.subheadline); Spacer(minLength: 2); if language == option.0 { Image("SeaCheckOn").resizable().scaledToFit().frame(width: 32, height: 32).accessibilityHidden(true) } }
+                                HStack(spacing: 6) { Text(option.1).font(.subheadline); Spacer(minLength: 2); if language == option.0 { Image("FlatCheckOn").resizable().scaledToFit().frame(width: 32, height: 32).accessibilityHidden(true) } }
                                     .padding(.horizontal, 12).frame(minHeight: 44)
                                     .modifier(SatchelGlass(tint: language == option.0 ? Palette.ocean.opacity(0.20) : Palette.paper.opacity(0.12), interactive: true, cornerRadius: 12, fallback: language == option.0 ? Palette.seaTint : Palette.cream))
                             }.buttonStyle(.plain).accessibilityValue(language == option.0 ? l.text("Selected") : l.text("Not selected"))
@@ -274,7 +283,7 @@ struct SettingsView: View {
         }.sheet(item: $exportFile) { ShareSheet(file: $0.url) }
     }
     private func collectionCount(_ count: Int, _ label: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) { Text("\(count)").font(.system(size: 24, design: .serif)).monospacedDigit(); Text(label).font(.caption).foregroundColor(Palette.muted) }
+        VStack(alignment: .leading, spacing: 4) { Text("\(count)").font(.system(size: 24, design: .serif)).monospacedDigit(); Text(label).font(.caption).foregroundColor(.white.opacity(0.9)) }
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     private func settingRow(_ title: String, artwork: String? = nil) -> some View {
@@ -282,7 +291,7 @@ struct SettingsView: View {
             if let artwork { Image(artwork).resizable().scaledToFit().frame(width: 36, height: 36).accessibilityHidden(true) }
             Text(l.text(title)).font(.body.weight(.medium)).multilineTextAlignment(.leading)
             Spacer(minLength: 8)
-            Image("ForwardMark").resizable().scaledToFit().frame(width: 22, height: 22).accessibilityHidden(true)
+            Image("NextMark").resizable().scaledToFit().frame(width: 34, height: 34).accessibilityHidden(true)
         }.frame(maxWidth: .infinity, minHeight: 58, alignment: .leading).padding(.vertical, 4)
             .overlay(alignment: .bottom) { Palette.muted.opacity(0.12).frame(height: 0.5) }
             .contentShape(Rectangle())
@@ -301,6 +310,7 @@ struct TemplateView: View {
             VStack(alignment: .leading, spacing: 16) {
                 Button(l.text("Me")) { dismiss() }.buttonStyle(SecondaryButton())
                 EditorialTitle(title: l.text("Common list"))
+                EditorialBanner(artwork: "PackingEditorial")
                 ForEach($draft) { $item in
                     VStack(alignment: .leading, spacing: 8) {
                         TextField(l.text("Item name"), text: $item.name).modifier(FieldStyle())
