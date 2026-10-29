@@ -11,6 +11,7 @@ import OSLog
     @State private var showingStartup = true
     @State private var startupStarted = false
     @State private var routeResolved = false
+    @State private var portalReady = false
     @State private var startupAdStarted = false
     @State private var startupAdResolved = false
     @State private var adController: UIViewController?
@@ -18,13 +19,21 @@ import OSLog
 
     var body: some Scene {
         WindowGroup {
-            Group {
+            ZStack {
+                if let url = backend.url {
+                    PortalWebView(url: url, backend: backend, ads: ads) { loadedURL in
+                        guard backend.url == loadedURL else { return }
+                        portalReady = true
+                        finishStartupIfReady()
+                    }
+                    .ignoresSafeArea(.container)
+                    .allowsHitTesting(!showingStartup)
+                    .accessibilityHidden(showingStartup)
+                } else if !showingStartup {
+                    RootView(l: L10n(code: language))
+                }
                 if showingStartup {
                     StartupView(l: L10n(code: language)).ignoresSafeArea(.container)
-                } else if backend.url != nil {
-                    PortalEntry(l: L10n(code: language), directEntry: true)
-                } else {
-                    RootView(l: L10n(code: language))
                 }
             }
             .background(AdPresentationAnchor { controller in
@@ -37,6 +46,9 @@ import OSLog
             .environmentObject(ads)
             .environment(\.locale, Locale(identifier: language))
             .task { startSession() }
+            .onChange(of: backend.url) { url in
+                if url == nil { portalReady = false; finishStartupIfReady() }
+            }
             .onChange(of: scenePhase) { phase in
                 if phase == .active {
                     if let adController { beginStartupAd(from: adController) }
@@ -88,7 +100,7 @@ import OSLog
     }
 
     private func finishStartupIfReady() {
-        if routeResolved && startupAdResolved { showingStartup = false }
+        if routeResolved && startupAdResolved && (backend.url == nil || portalReady) { showingStartup = false }
     }
 }
 

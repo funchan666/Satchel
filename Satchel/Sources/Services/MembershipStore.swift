@@ -1,5 +1,6 @@
 import Foundation
 import StoreKit
+import OSLog
 
 enum SubscriptionProductIDs {
     static let monthly = "coins_1.99"
@@ -10,6 +11,7 @@ enum SubscriptionProductIDs {
     static let monthlyID = SubscriptionProductIDs.monthly
     static let yearlyID = SubscriptionProductIDs.yearly
     private let productIDs = [monthlyID, yearlyID]
+    private let productLog = Logger(subsystem: Bundle.main.bundleIdentifier ?? "Satchel", category: "MembershipProducts")
     private static let legacyIDs: Set<String> = ["clipo.plus.monthly", "clipo.plus.yearly", "satchel.plus.monthly", "satchel.plus.yearly"]
     static let allEntitlementIDs: Set<String> = legacyIDs.union([monthlyID, yearlyID])
     @Published private(set) var products: [Product] = []
@@ -38,21 +40,36 @@ enum SubscriptionProductIDs {
                 await self.process(result)
             }
         }
-        Task { await refreshEntitlements(); await finishPendingTransactions(); await loadProducts() }
+        Task { await refreshEntitlements(); await finishPendingTransactions() }
     }
     deinit { updatesTask?.cancel() }
     func loadProducts() async {
+        guard !loading else { return }
         loading = true; message = nil; defer { loading = false }
         do {
             let available = try await Product.products(for: productIDs)
+            for id in productIDs {
+                if let product = available.first(where: { $0.id == id }) {
+                    let kind = String(describing: product.type)
+                    let period = product.subscription.map { "\($0.subscriptionPeriod.value) \(String(describing: $0.subscriptionPeriod.unit))" } ?? "none"
+                    productLog.info("Product \(id, privacy: .public): type=\(kind, privacy: .public), period=\(period, privacy: .public)")
+                } else {
+                    productLog.notice("StoreKit did not return product \(id, privacy: .public)")
+                }
+            }
             products = productIDs.compactMap { id in
                 available.first { product in
-                    guard product.id == id, let period = product.subscription?.subscriptionPeriod, period.value == 1 else { return false }
+                    guard product.id == id, product.type == .autoRenewable,
+                          let period = product.subscription?.subscriptionPeriod, period.value == 1 else { return false }
                     return id == Self.monthlyID ? period.unit == .month : period.unit == .year
                 }
             }
             if products.count < productIDs.count { message = "Subscription products are not available yet. Please try again later." }
-        } catch { message = "Subscription products could not be loaded. Please try again." }
+        } catch {
+            let failure = error as NSError
+            productLog.error("Product request failed: domain=\(failure.domain, privacy: .public), code=\(failure.code, privacy: .public)")
+            message = "Subscription products could not be loaded. Please try again."
+        }
     }
     func purchase(_ product: Product) async {
         guard productIDs.contains(product.id), !loading else { return }

@@ -27,8 +27,6 @@ struct MembershipView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 VStack(spacing: 10) {
-                    Button { Task { await membership.loadProducts() } } label: { Text(l.text("Refresh products")).frame(maxWidth: .infinity, alignment: .leading) }
-                        .buttonStyle(SecondaryButton()).disabled(membership.loading)
                     Button { Task { await membership.restore() } } label: { Text(l.text("Restore purchases")).frame(maxWidth: .infinity, alignment: .leading) }
                         .buttonStyle(SecondaryButton()).disabled(membership.loading)
                     Button {
@@ -46,14 +44,16 @@ struct MembershipView: View {
                 }
             }.padding(.horizontal, 20).padding(.top, 12).padding(.bottom, 32).frame(maxWidth: 700)
         }.modifier(Page()).toolbar(.hidden, for: .navigationBar)
+            .task { await membership.loadProducts() }
     }
 
     private var membershipCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Image("MembershipArt").resizable().scaledToFit().frame(height: 145).frame(maxWidth: .infinity).accessibilityHidden(true)
+        HStack(alignment: .center, spacing: 16) {
+            Image("MembershipArt").resizable().scaledToFit().frame(width: 100, height: 100).accessibilityHidden(true)
             Text(l.text("More room for every journey."))
-                .font(.system(size: 25, design: .serif)).fixedSize(horizontal: false, vertical: true)
-        }.frame(maxWidth: .infinity, alignment: .leading).padding(20)
+                .font(.system(size: 24, design: .serif)).fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+        }.frame(maxWidth: .infinity, alignment: .leading).padding(18)
             .modifier(SatchelGlass(tint: Palette.seaTint.opacity(0.30), cornerRadius: 22))
     }
 
@@ -87,10 +87,15 @@ struct MembershipView: View {
                 }
                 Spacer(minLength: 0)
             }
-            Button {
-                if let product { Task { await membership.purchase(product) } }
-            } label: { Text(l.text("Subscribe")).frame(maxWidth: .infinity) }
-                .buttonStyle(PrimaryButton()).disabled(membership.loading || product == nil)
+            if let product {
+                Button { Task { await membership.purchase(product) } } label: {
+                    Text(l.text("Subscribe")).frame(maxWidth: .infinity)
+                }.buttonStyle(PrimaryButton()).disabled(membership.loading)
+            } else {
+                Button { Task { await membership.loadProducts() } } label: {
+                    Text(l.text(membership.loading ? "Loading…" : "Refresh products")).frame(maxWidth: .infinity)
+                }.buttonStyle(SecondaryButton()).disabled(membership.loading)
+            }
         }.frame(maxWidth: .infinity, alignment: .leading).padding(18)
             .modifier(SatchelGlass(tint: Palette.cream.opacity(0.38), cornerRadius: 20))
     }

@@ -18,10 +18,13 @@ struct Page: ViewModifier {
     func body(content: Content) -> some View {
         content.foregroundColor(Palette.ink)
             .background {
-                GeometryReader { geometry in
-                    Image("PageLinen").resizable().scaledToFill()
-                        .frame(width: geometry.size.width, height: geometry.size.height).clipped()
-                        .accessibilityHidden(true)
+                ZStack {
+                    Palette.paper
+                    GeometryReader { geometry in
+                        Image("PageLinen").resizable().scaledToFill()
+                            .frame(width: geometry.size.width, height: geometry.size.height).clipped()
+                            .opacity(0.18).accessibilityHidden(true)
+                    }
                 }.ignoresSafeArea(.container)
             }
     }

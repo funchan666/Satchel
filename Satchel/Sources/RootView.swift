@@ -80,36 +80,37 @@ struct TripsView: View {
         }
     }
     private var shortcuts: some View {
-        HStack(alignment: .top, spacing: 12) {
-            shortcut(artwork: "SeaJournal", label: "Journal", count: store.trips.reduce(0) { $0 + $1.entries.count }, countLabel: "Memories", destination: 1)
-            shortcut(artwork: "NavGuide", label: "Travel guide", count: nil, countLabel: "Ideas for your journey", destination: 2)
-        }
+        HStack(spacing: 4) {
+            shortcut("SeaJournal", "Journal", destination: 1)
+            shortcut("NavGuide", "Travel guide", destination: 2)
+        }.padding(8).modifier(SatchelGlass(tint: Palette.seaTint.opacity(0.16), cornerRadius: 18))
     }
-    private func shortcut(artwork: String, label: String, count: Int?, countLabel: String, destination: Int) -> some View {
+    private func shortcut(_ artwork: String, _ title: String, destination: Int) -> some View {
         Button { tab = destination } label: {
-            VStack(alignment: .leading, spacing: 8) {
-                Image(artwork).resizable().scaledToFit().frame(width: 56, height: 56).accessibilityHidden(true)
-                Text(l.text(label)).font(.system(size: 18, design: .serif)).multilineTextAlignment(.leading)
-                Text(count.map { "\($0)  ·  \(l.text(countLabel))" } ?? l.text(countLabel))
-                    .font(.caption).foregroundColor(Palette.muted).multilineTextAlignment(.leading)
-            }.frame(maxWidth: .infinity, minHeight: 130, alignment: .topLeading).padding(15)
-                .modifier(SatchelGlass(tint: Palette.cream.opacity(0.3), interactive: true, cornerRadius: 18))
+            HStack(spacing: 8) {
+                Image(artwork).resizable().scaledToFit().frame(width: 35, height: 35).accessibilityHidden(true)
+                Text(l.text(title)).font(.subheadline.weight(.medium)).multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+            }.frame(maxWidth: .infinity, minHeight: 48, alignment: .leading).contentShape(Rectangle())
         }.buttonStyle(.plain)
     }
     private var welcome: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Spacer(minLength: 160)
-            VStack(alignment: .leading, spacing: 12) {
-                Text(l.text("Your next journey starts here.")).font(.system(size: 27, design: .serif)).fixedSize(horizontal: false, vertical: true)
-                Button { creating = true } label: { AddActionLabel(title: l.text("New Trip")) }.buttonStyle(PrimaryButton())
-            }.padding(18).frame(maxWidth: .infinity, alignment: .leading)
-                .modifier(SatchelGlass(tint: Palette.cream.opacity(0.55), cornerRadius: 18))
-        }.padding(14).frame(maxWidth: .infinity, minHeight: 335, alignment: .bottomLeading)
-            .background {
-                GeometryReader { geometry in
-                    Image("SeaJourneyHero").resizable().scaledToFill().frame(width: geometry.size.width, height: geometry.size.height).clipped().accessibilityHidden(true)
+        VStack(alignment: .leading, spacing: 0) {
+            EditorialBanner(artwork: "CoastNotebook", height: 225)
+            HStack(alignment: .center, spacing: 14) {
+                VStack(alignment: .leading, spacing: 7) {
+                    Text(l.text("Your next journey starts here."))
+                        .font(.system(size: 25, design: .serif)).fixedSize(horizontal: false, vertical: true)
+                    Text(l.text("Keep your packing list and memories in one place."))
+                        .font(.footnote).foregroundColor(Palette.muted).fixedSize(horizontal: false, vertical: true)
                 }
-            }.clipShape(RoundedRectangle(cornerRadius: 22))
+                Spacer(minLength: 0)
+                Image("TravelTicket").resizable().scaledToFit().frame(width: 62, height: 62).accessibilityHidden(true)
+            }.padding(.top, 18)
+            Button { creating = true } label: { AddActionLabel(title: l.text("New Trip")) }
+                .buttonStyle(PrimaryButton()).padding(.top, 18)
+        }.frame(maxWidth: .infinity, alignment: .leading)
     }
     private var overview: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -208,7 +209,7 @@ struct JournalOverview: View {
         }
     }
     private var journalCover: some View {
-        EditorialBanner(artwork: "JournalCoast", height: 290)
+        EditorialBanner(artwork: "JournalCoast", height: 225)
     }
     private var journalInvitation: some View {
         HStack(alignment: .center, spacing: 16) {
@@ -221,8 +222,7 @@ struct JournalOverview: View {
                     Button { selectedTrip = trip } label: { AddActionLabel(title: l.text("Add a memory")) }.buttonStyle(PrimaryButton())
                 }
             }
-        }.frame(maxWidth: .infinity, alignment: .leading).padding(18)
-            .modifier(SatchelGlass(tint: Palette.cream.opacity(0.3), cornerRadius: 20))
+        }.frame(maxWidth: .infinity, alignment: .leading).padding(.vertical, 8)
     }
     private func memoryCard(_ trip: Trip) -> some View {
         let term = query.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -253,29 +253,23 @@ struct SettingsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                VStack(alignment: .leading, spacing: 12) {
-                    Image("NavMe").resizable().scaledToFit().frame(width: 62, height: 62).accessibilityHidden(true)
-                    HStack(spacing: 18) {
-                        collectionCount(store.trips.count, l.text("Trips"))
-                        collectionCount(store.trips.reduce(0) { $0 + $1.entries.count }, l.text("Memories"))
-                        collectionCount(store.referencedPhotos(in: store.trips).count, l.text("Photos"))
-                    }
-                }.foregroundColor(.white).frame(maxWidth: .infinity, minHeight: 145, alignment: .leading).padding(18)
-                    .background {
-                        GeometryReader { geometry in
-                        Image("SeaJourneyHero").resizable().scaledToFill().frame(width: geometry.size.width, height: geometry.size.height).clipped().overlay(Palette.ink.opacity(0.58)).accessibilityHidden(true)
-                        }
-                    }.clipShape(RoundedRectangle(cornerRadius: 20))
+                HStack(alignment: .center, spacing: 12) {
+                    Image("NavMe").resizable().scaledToFit().frame(width: 48, height: 48).accessibilityHidden(true)
+                    collectionCount(store.trips.count, l.text("Trips"))
+                    collectionCount(store.trips.reduce(0) { $0 + $1.entries.count }, l.text("Memories"))
+                    collectionCount(store.referencedPhotos(in: store.trips).count, l.text("Photos"))
+                }.frame(maxWidth: .infinity, alignment: .leading).padding(16)
+                    .modifier(SatchelGlass(tint: Palette.seaTint.opacity(0.25), cornerRadius: 20))
                 NavigationLink { MembershipView(l: l) } label: {
                     HStack(spacing: 15) {
-                        Image("MembershipArt").resizable().scaledToFit().frame(width: 94, height: 94).accessibilityHidden(true)
+                        Image("MembershipArt").resizable().scaledToFit().frame(width: 74, height: 74).accessibilityHidden(true)
                         VStack(alignment: .leading, spacing: 7) {
                             Text(l.text("Satchel Membership")).font(.system(size: 21, design: .serif)).multilineTextAlignment(.leading)
                             Text(l.text("More room for every journey.")).font(.caption).foregroundColor(Palette.muted).multilineTextAlignment(.leading)
                         }
                         Spacer(minLength: 0)
                         Image("NextMark").resizable().scaledToFit().frame(width: 28, height: 28).accessibilityHidden(true)
-                    }.frame(maxWidth: .infinity, minHeight: 110, alignment: .leading).padding(15)
+                    }.frame(maxWidth: .infinity, minHeight: 82, alignment: .leading).padding(15)
                         .modifier(SatchelGlass(tint: Palette.seaTint.opacity(0.35), interactive: true, cornerRadius: 20))
                 }.buttonStyle(.plain)
                 VStack(alignment: .leading, spacing: 0) {
@@ -306,7 +300,7 @@ struct SettingsView: View {
         }.sheet(item: $exportFile) { ShareSheet(file: $0.url) }
     }
     private func collectionCount(_ count: Int, _ label: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) { Text("\(count)").font(.system(size: 24, design: .serif)).monospacedDigit(); Text(label).font(.caption).foregroundColor(.white.opacity(0.9)) }
+        VStack(alignment: .leading, spacing: 4) { Text("\(count)").font(.system(size: 24, design: .serif)).monospacedDigit(); Text(label).font(.caption).foregroundColor(Palette.muted).fixedSize(horizontal: false, vertical: true) }
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     private func settingRow(_ title: String, artwork: String? = nil) -> some View {
