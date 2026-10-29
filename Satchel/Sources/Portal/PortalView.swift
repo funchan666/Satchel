@@ -6,14 +6,11 @@ struct PortalEntry: View {
     @AppStorage("satchel.language") private var language = "en"
     @EnvironmentObject private var backend: PortalBackend
     @EnvironmentObject private var ads: RewardedAds
-    @State private var privacyError = false
     let l: L10n
     var directEntry = false
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             if !directEntry { HStack { Button(l.text("Me")) { backend.closePortal(); dismiss() }.buttonStyle(SecondaryButton()); Spacer() } }
-            if ads.privacyOptionsRequired { Button(l.text("Ad privacy choices")) { Task { do { try await ads.showPrivacyOptions(from: nil) } catch { privacyError = true } } }.buttonStyle(SecondaryButton()) }
-            if privacyError { Text(l.text("Privacy options are unavailable right now.")).foregroundColor(Palette.rust) }
             if let url = backend.url {
                 PortalWebView(url: url, backend: backend, ads: ads, fallbackOnFailure: directEntry).frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {

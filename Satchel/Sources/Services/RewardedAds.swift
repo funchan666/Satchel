@@ -8,7 +8,6 @@ import OSLog
     private let testAdUnit = "ca-app-pub-3940256099942544/1712485313"
     private let testInterstitialUnit = "ca-app-pub-3940256099942544/4411468910"
     private let testAppOpenUnit = "ca-app-pub-3940256099942544/5575463023"
-    @Published private(set) var privacyOptionsRequired = false
     private var active = false
     var isPresentingFullScreen: Bool { active }
     private(set) var openConsentInProgress = false
@@ -51,7 +50,6 @@ import OSLog
                 // UMP may still allow requests using a previous session's consent.
                 guard ConsentInformation.shared.canRequestAds else { throw error }
             }
-            privacyOptionsRequired = ConsentInformation.shared.privacyOptionsRequirementStatus == .required
             guard await waitForForeground(attempt: attempt, controller: controller, shouldPresent: shouldPresent) else { cancelPendingOpen(); return "ad_not_ready" }
             if consentUpdated {
                 stage = "consent-form"
@@ -60,7 +58,6 @@ import OSLog
                 catch { openConsentInProgress = false; throw error }
                 openConsentInProgress = false
             }
-            privacyOptionsRequired = ConsentInformation.shared.privacyOptionsRequirementStatus == .required
             guard ConsentInformation.shared.canRequestAds,
                   await waitForForeground(attempt: attempt, controller: controller, shouldPresent: shouldPresent) else {
                 openLog.info("Startup ad cannot request ads or startup is no longer active")
@@ -115,7 +112,6 @@ import OSLog
         do {
             try await ConsentInformation.shared.requestConsentInfoUpdate(with: RequestParameters())
             try await ConsentForm.loadAndPresentIfRequired(from: controller)
-            privacyOptionsRequired = ConsentInformation.shared.privacyOptionsRequirementStatus == .required
             guard ConsentInformation.shared.canRequestAds else { active = false; return "ad_not_ready" }
             if !sdkStarted {
                 await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
@@ -138,7 +134,6 @@ import OSLog
         do {
             try await ConsentInformation.shared.requestConsentInfoUpdate(with: RequestParameters())
             try await ConsentForm.loadAndPresentIfRequired(from: controller)
-            privacyOptionsRequired = ConsentInformation.shared.privacyOptionsRequirementStatus == .required
             guard ConsentInformation.shared.canRequestAds else { active = false; return "ad_not_ready" }
             if !sdkStarted {
                 await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
@@ -153,9 +148,6 @@ import OSLog
                 loaded.present(from: controller)
             }
         } catch { active = false; interstitial = nil; return "ad_load_failed" }
-    }
-    func showPrivacyOptions(from controller: UIViewController?) async throws {
-        try await ConsentForm.presentPrivacyOptionsForm(from: controller)
     }
     func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
         if appOpenAd != nil { openLog.info("Startup ad dismissed") }

@@ -103,8 +103,6 @@ private let translations: [String: [String: String]] = [
 "Connect":row(["Connect","连接","連線","接続","연결","Conectar","Se connecter","Verbinden","Conectar"]),
 "Connecting…":row(["Connecting…","连接中…","連線中…","接続中…","연결 중…","Conectando…","Connexion…","Verbinden…","Conectando…"]),
 "Export your journal":row(["Export your journal","导出旅行记录","匯出旅行記錄","旅の記録を書き出す","여행 기록 내보내기","Exportar diario","Exporter le journal","Tagebuch exportieren","Exportar diário"]),
-"Ad privacy choices":row(["Ad privacy choices","广告隐私选项","廣告隱私選項","広告のプライバシー設定","광고 개인정보 선택","Privacidad de anuncios","Confidentialité des publicités","Werbedatenschutz","Privacidade de anúncios"]),
-"Privacy options are unavailable right now.":row(["Privacy options are unavailable right now.","目前无法打开隐私选项。","目前無法開啟隱私選項。","現在プライバシー設定を開けません。","현재 개인정보 설정을 열 수 없어요.","Las opciones de privacidad no están disponibles.","Les options de confidentialité sont indisponibles.","Datenschutzoptionen sind derzeit nicht verfügbar.","As opções de privacidade estão indisponíveis."]),
 "A little place for everything your journey holds.":row(["A little place for everything your journey holds.","为旅程中的一切留个温暖的地方。","為旅程中的一切留個溫暖的地方。","旅のすべてを、ここに。","여행의 모든 순간을 담는 작은 공간.","Un pequeño lugar para todo lo que trae tu viaje.","Un petit refuge pour tout ce que contient votre voyage.","Ein kleiner Ort für alles, was deine Reise mitbringt.","Um pequeno lugar para tudo que sua viagem traz."]),
 "Sign in":row(["Sign in","一键登录","一鍵登入","ログイン","로그인","Iniciar sesión","Se connecter","Anmelden","Entrar"]),
 "Continue":row(["Continue","一键登录","一鍵登入","続ける","계속하기","Continuar","Continuer","Weiter","Continuar"]),

@@ -8,8 +8,6 @@ enum LegalDocument: String, Identifiable {
 }
 struct LegalDocumentView: View {
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var ads: RewardedAds
-    @State private var privacyError = false
     let document: LegalDocument
     let l: L10n
     var presented = false
@@ -17,15 +15,6 @@ struct LegalDocumentView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack { BackTagButton(label: l.text(presented ? "Close" : "Back")) { dismiss() }; Spacer() }
             Text(l.text("The full document is currently available in English.")).font(.footnote).foregroundColor(Palette.muted)
-            if document == .privacy && ads.privacyOptionsRequired {
-                Button(l.text("Ad privacy choices")) {
-                    Task {
-                        do { try await ads.showPrivacyOptions(from: nil); privacyError = false }
-                        catch { privacyError = true }
-                    }
-                }.buttonStyle(SecondaryButton())
-                if privacyError { Text(l.text("Privacy options are unavailable right now.")).font(.footnote).foregroundColor(Palette.rust) }
-            }
             LegalWebView(document: document).frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
         }.padding(20).modifier(Page()).toolbar(.hidden, for: .navigationBar)
