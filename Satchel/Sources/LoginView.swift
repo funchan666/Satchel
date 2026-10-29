@@ -21,7 +21,6 @@ struct LoginView: View {
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
-                        brand
                         Spacer(minLength: 100)
                         signInPanel
                     }
@@ -37,20 +36,6 @@ struct LoginView: View {
         .sheet(item: $document) { doc in
             NavigationStack { LegalDocumentView(document: doc, l: l, presented: true) }
         }
-    }
-
-    private var brand: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Satchel")
-                .font(.system(size: 38, weight: .regular, design: .serif))
-                .accessibilityAddTraits(.isHeader)
-            Text(l.text("Your journeys, together."))
-                .font(.subheadline)
-        }
-        .foregroundColor(Palette.ink)
-        .padding(.horizontal, 18)
-        .padding(.vertical, 12)
-        .modifier(SatchelGlass(tint: Palette.cream.opacity(0.65), cornerRadius: 20))
     }
 
     private var signInPanel: some View {

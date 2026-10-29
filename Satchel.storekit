@@ -54,6 +54,90 @@
           "referenceName": "Satchel Yearly",
           "subscriptionGroupID": "6C83C0F8-286B-46B6-8A48-426922D4B62D",
           "type": "RecurringSubscription"
+        },
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "9.99",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "9A6C663F-94C4-4656-B730-06620C6D8CFF",
+          "introductoryOffer": null,
+          "localizations": [
+            {
+              "locale": "en_US",
+              "displayName": "Satchel Monthly",
+              "description": "Local StoreKit testing only."
+            }
+          ],
+          "productID": "clipo.plus.monthly",
+          "recurringSubscriptionPeriod": "P1M",
+          "referenceName": "Satchel Monthly",
+          "subscriptionGroupID": "6C83C0F8-286B-46B6-8A48-426922D4B62D",
+          "type": "RecurringSubscription"
+        },
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "99.99",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "EDAA9DA2-BD42-4726-9B12-CB339AE19325",
+          "introductoryOffer": null,
+          "localizations": [
+            {
+              "locale": "en_US",
+              "displayName": "Satchel Yearly",
+              "description": "Local StoreKit testing only."
+            }
+          ],
+          "productID": "clipo.plus.yearly",
+          "recurringSubscriptionPeriod": "P1Y",
+          "referenceName": "Satchel Yearly",
+          "subscriptionGroupID": "6C83C0F8-286B-46B6-8A48-426922D4B62D",
+          "type": "RecurringSubscription"
+        },
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "9.99",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "9B10504A-8401-455A-80D6-CBF95AC54603",
+          "introductoryOffer": null,
+          "localizations": [
+            {
+              "locale": "en_US",
+              "displayName": "Satchel Monthly",
+              "description": "Local StoreKit testing only."
+            }
+          ],
+          "productID": "coins_1.99",
+          "recurringSubscriptionPeriod": "P1M",
+          "referenceName": "Satchel Monthly",
+          "subscriptionGroupID": "6C83C0F8-286B-46B6-8A48-426922D4B62D",
+          "type": "RecurringSubscription"
+        },
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "99.99",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "F5140AAE-8FE3-4B58-85B9-54B38329E272",
+          "introductoryOffer": null,
+          "localizations": [
+            {
+              "locale": "en_US",
+              "displayName": "Satchel Yearly",
+              "description": "Local StoreKit testing only."
+            }
+          ],
+          "productID": "conis_4.99",
+          "recurringSubscriptionPeriod": "P1Y",
+          "referenceName": "Satchel Yearly",
+          "subscriptionGroupID": "6C83C0F8-286B-46B6-8A48-426922D4B62D",
+          "type": "RecurringSubscription"
         }
       ]
     },

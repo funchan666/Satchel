@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import OSLog
 
 @main struct SatchelApp: App {
     @StateObject private var store = TravelStore()
@@ -13,6 +14,7 @@ import UIKit
     @State private var startupAdStarted = false
     @State private var startupAdResolved = false
     @State private var adController: UIViewController?
+    private let startupLog = Logger(subsystem: Bundle.main.bundleIdentifier ?? "Satchel", category: "AppOpenAd")
 
     var body: some Scene {
         WindowGroup {
@@ -53,12 +55,18 @@ import UIKit
             routeResolved = true
             finishStartupIfReady()
         }
-        // An unfilled or slow app-open request must never block the app indefinitely.
+        // Give the consent update, SDK initialization and network load enough
+        // foreground time, then skip unavailable ads when no consent flow is active.
         Task { @MainActor in
+            var activeSeconds = 0
             while !startupAdResolved {
-                do { try await Task.sleep(nanoseconds: 5_000_000_000) } catch { return }
-                if scenePhase != .active || ads.openConsentInProgress { continue }
+                do { try await Task.sleep(nanoseconds: 1_000_000_000) } catch { return }
+                if UIApplication.shared.applicationState != .active { continue }
+                if ads.openConsentInProgress { activeSeconds = 0; continue }
                 if ads.openAdIsPresenting { return }
+                activeSeconds += 1
+                guard activeSeconds >= 15 else { continue }
+                startupLog.info("Startup ad timed out before presentation; presenter ready: \(adController != nil)")
                 ads.cancelPendingOpen()
                 startupAdResolved = true
                 finishStartupIfReady()
@@ -70,9 +78,10 @@ import UIKit
         guard showingStartup, !startupAdStarted, !startupAdResolved else { return }
         startupAdStarted = true
         Task { @MainActor in
-            _ = await ads.showAppOpen(from: controller) {
-                showingStartup && !startupAdResolved && scenePhase == .active
+            let result = await ads.showAppOpen(from: controller) {
+                showingStartup && !startupAdResolved
             }
+            startupLog.info("Startup ad finished: \(result, privacy: .public)")
             startupAdResolved = true
             finishStartupIfReady()
         }

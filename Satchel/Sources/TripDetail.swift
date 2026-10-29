@@ -130,7 +130,7 @@ struct TripDetail: View {
     }
     @ViewBuilder private func journal(_ trip: Trip) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack { Text(l.text("Journal")).font(.system(size: 24, design: .serif)); Spacer(); Button { editingEntry = nil; showEntry = true } label: { AddActionLabel(title: l.text("Add a memory")) }.buttonStyle(PrimaryButton()) }
+            Button { editingEntry = nil; showEntry = true } label: { AddActionLabel(title: l.text("Add a memory")) }.buttonStyle(PrimaryButton())
             if trip.entries.isEmpty {
                 Image("SeaJournal").resizable().scaledToFit().frame(maxWidth: 230).frame(maxWidth: .infinity).accessibilityHidden(true)
                 Text(l.text("Your memories start here.")).font(.system(size: 20, design: .serif))
@@ -158,7 +158,6 @@ struct TripDetail: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 ErrorNotice(l: l)
-                EditorialTitle(title: l.text("Packing photos"))
                 if let image = store.image(selectedPhoto) { Image(uiImage: image).resizable().scaledToFit().clipShape(RoundedRectangle(cornerRadius: 12)) }
                 Text(l.text("Notes")).font(.headline)
                 TextField(l.text("Notes"), text: $photoNote).modifier(FieldStyle())
@@ -180,7 +179,6 @@ struct TripDetail: View {
     private var lessonEditor: some View {
         ScrollView { VStack(alignment: .leading, spacing: 16) {
             ErrorNotice(l: l)
-            EditorialTitle(title: l.text("Notes for next time"))
             TextEditor(text: $lessonDraft).scrollContentBackground(.hidden).frame(minHeight: 180).padding(8).background(Palette.cream, in: RoundedRectangle(cornerRadius: 12))
             HStack { Button(l.text("Cancel")) { editingLessons = false }.buttonStyle(SecondaryButton()); Button(l.text("Save")) { if var current = trip { current.lessons = lessonDraft; if store.update(current) { editingLessons = false } } }.buttonStyle(PrimaryButton()) }
         }.padding(20).frame(maxWidth: 700) }.modifier(Page())

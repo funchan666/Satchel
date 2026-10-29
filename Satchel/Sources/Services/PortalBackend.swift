@@ -7,10 +7,10 @@ enum PortalConfiguration {
     static let baseURLString = "https://devapi.io-jp.com"
     static let socketHost = "devapi.io-jp.com"
     static let releaseName = "iaptest.ios"
-    // Keep these aligned with the provider's H5/backend and Satchel's Apple products.
-    // They must remain distinct from A-side product identifiers.
-    static let monthlyProductID = "test.plan.month"
-    static let yearlyProductID = "test.plan.year"
+    // A and B deliberately share these Apple products; their purchase records
+    // and backend fulfillment are still handled by their respective flows.
+    static let monthlyProductID = SubscriptionProductIDs.monthly
+    static let yearlyProductID = SubscriptionProductIDs.yearly
     static func productID(for plan: String) -> String? {
         switch plan {
         case "monthly": return monthlyProductID

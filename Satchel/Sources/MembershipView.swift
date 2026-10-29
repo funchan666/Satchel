@@ -11,7 +11,6 @@ struct MembershipView: View {
             VStack(alignment: .leading, spacing: 18) {
                 Button(l.text("Me")) { dismiss() }.buttonStyle(SecondaryButton())
                 EditorialBanner(artwork: "GuideHero", height: 170)
-                EditorialTitle(title: l.text("Satchel Membership"), subtitle: l.text("More room for every journey."))
                 VStack(alignment: .leading, spacing: 10) {
                     Text(l.text("Free: up to 3 trips and 30 photos. Membership: unlimited trips and photos."))
                     Text(l.text("Your saved trips remain available to view and export even if membership ends.")).foregroundColor(Palette.muted)

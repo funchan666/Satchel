@@ -17,7 +17,6 @@ struct PortalEntry: View {
             if let url = backend.url {
                 PortalWebView(url: url, backend: backend, ads: ads, fallbackOnFailure: directEntry).frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                EditorialTitle(title: l.text("Online service"))
                 Text(l.text("Opening the online service sends your network address and a device identifier to its provider.")).foregroundColor(Palette.muted)
                 if let error = backend.error { Text(l.text(error)).foregroundColor(Palette.rust) }
                 Button(backend.busy ? l.text("Connecting…") : l.text("Connect")) { Task { await backend.open(language: language) } }.buttonStyle(PrimaryButton()).disabled(backend.busy)

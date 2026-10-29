@@ -12,7 +12,7 @@ struct RootView: View {
                     HStack { Text(l.text(message)).font(.footnote); Spacer(); Button("OK") { store.error = nil }.buttonStyle(SecondaryButton()) }.padding(12).background(Palette.cream)
                 }
                 ZStack {
-                    TripsView(l: l, creating: $creating).opacity(tab == 0 ? 1 : 0).allowsHitTesting(tab == 0).accessibilityHidden(tab != 0)
+                    TripsView(l: l, creating: $creating, tab: $tab).opacity(tab == 0 ? 1 : 0).allowsHitTesting(tab == 0).accessibilityHidden(tab != 0)
                     JournalOverview(l: l, creating: $creating).opacity(tab == 1 ? 1 : 0).allowsHitTesting(tab == 1).accessibilityHidden(tab != 1)
                     TravelGuideView(l: l, isActive: tab == 2).opacity(tab == 2 ? 1 : 0).allowsHitTesting(tab == 2).accessibilityHidden(tab != 2)
                     SettingsView(l: l).opacity(tab == 3 ? 1 : 0).allowsHitTesting(tab == 3).accessibilityHidden(tab != 3)
@@ -42,6 +42,7 @@ struct TripsView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let l: L10n
     @Binding var creating: Bool
+    @Binding var tab: Int
     @State private var query = ""
     @State private var showSearch = false
     private var sorted: [Trip] { store.trips.sorted { $0.start > $1.start } }
@@ -52,12 +53,8 @@ struct TripsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Satchel").font(.system(size: 36, design: .serif))
-                        Text(l.text("Your journeys, together.")).font(.subheadline).foregroundColor(Palette.muted)
-                    }
-                    Spacer(minLength: 10)
+                HStack {
+                    Spacer()
                     Button(l.text(showSearch ? "Cancel" : "Search")) { withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.2)) { showSearch.toggle(); if !showSearch { query = "" } } }
                         .buttonStyle(SecondaryButton())
                 }
@@ -67,13 +64,6 @@ struct TripsView: View {
                 }
                 if sorted.isEmpty {
                     welcome
-                    HStack(alignment: .top, spacing: 20) {
-                        Image("TravelTicket").resizable().scaledToFit().frame(width: 74).accessibilityHidden(true)
-                        VStack(alignment: .leading, spacing: 5) {
-                            Text(l.text("A little room for every journey")).font(.system(size: 21, design: .serif))
-                            Text(l.text("Keep your packing list and memories in one place.")).font(.subheadline).foregroundColor(Palette.muted)
-                        }
-                    }.padding(.horizontal, 3)
                 } else {
                     overview
                     if filtered.isEmpty {
@@ -85,8 +75,26 @@ struct TripsView: View {
                         if !past.isEmpty { section(l.text("Past journeys"), trips: past) }
                     }
                 }
+                if !showSearch { shortcuts }
             }.padding(.horizontal, 20).padding(.top, 16).padding(.bottom, 28).frame(maxWidth: 720)
         }
+    }
+    private var shortcuts: some View {
+        HStack(alignment: .top, spacing: 12) {
+            shortcut(artwork: "SeaJournal", label: "Journal", count: store.trips.reduce(0) { $0 + $1.entries.count }, countLabel: "Memories", destination: 1)
+            shortcut(artwork: "NavGuide", label: "Travel guide", count: nil, countLabel: "Ideas for your journey", destination: 2)
+        }
+    }
+    private func shortcut(artwork: String, label: String, count: Int?, countLabel: String, destination: Int) -> some View {
+        Button { tab = destination } label: {
+            VStack(alignment: .leading, spacing: 8) {
+                Image(artwork).resizable().scaledToFit().frame(width: 56, height: 56).accessibilityHidden(true)
+                Text(l.text(label)).font(.system(size: 18, design: .serif)).multilineTextAlignment(.leading)
+                Text(count.map { "\($0)  ·  \(l.text(countLabel))" } ?? l.text(countLabel))
+                    .font(.caption).foregroundColor(Palette.muted).multilineTextAlignment(.leading)
+            }.frame(maxWidth: .infinity, minHeight: 130, alignment: .topLeading).padding(15)
+                .modifier(SatchelGlass(tint: Palette.cream.opacity(0.3), interactive: true, cornerRadius: 18))
+        }.buttonStyle(.plain)
     }
     private var welcome: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -104,18 +112,18 @@ struct TripsView: View {
             }.clipShape(RoundedRectangle(cornerRadius: 22))
     }
     private var overview: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .lastTextBaseline) {
-                Text(l.text("Your journeys")).font(.system(size: 27, design: .serif))
-                Spacer()
-                Button { creating = true } label: { AddActionLabel(title: l.text("New Trip")) }.buttonStyle(PrimaryButton())
-            }
-            HStack(spacing: 20) {
-                countLabel(store.trips.count, title: l.text("Trips"))
-                countLabel(store.trips.reduce(0) { $0 + $1.entries.count }, title: l.text("Memories"))
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .center, spacing: 16) {
+                Image("NavTrips").resizable().scaledToFit().frame(width: 72, height: 72).accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 8) {
+                    countLabel(store.trips.count, title: l.text("Trips"))
+                    countLabel(store.trips.reduce(0) { $0 + $1.entries.count }, title: l.text("Memories"))
+                }
                 Spacer(minLength: 0)
             }
-        }
+            Button { creating = true } label: { AddActionLabel(title: l.text("New Trip")) }.buttonStyle(PrimaryButton())
+        }.frame(maxWidth: .infinity, alignment: .leading).padding(18)
+            .modifier(SatchelGlass(tint: Palette.seaTint.opacity(0.28), cornerRadius: 20))
     }
     private func countLabel(_ count: Int, title: String) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 5) {
@@ -168,7 +176,6 @@ struct JournalOverview: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
-                EditorialTitle(title: l.text("Journal"))
                 if !trips.isEmpty {
                     TextField(l.text("Search journeys and memories"), text: $query).modifier(FieldStyle())
                     if trips.count == 1, let trip = trips.first, !trip.entries.isEmpty {
@@ -182,12 +189,11 @@ struct JournalOverview: View {
                 }
                 if trips.isEmpty {
                     journalCover
-                    Text(l.text("Your memories start here.")).font(.system(size: 25, design: .serif))
-                    Button { creating = true } label: { AddActionLabel(title: l.text("New Trip")) }.buttonStyle(PrimaryButton())
+                    journalInvitation
                 } else if matches.isEmpty {
                     journalCover
-                    Text(l.text(query.isEmpty ? "Your memories start here." : "No matching memories")).font(.system(size: 23, design: .serif))
-                    if query.isEmpty, trips.count == 1, let trip = trips.first { Button { selectedTrip = trip } label: { AddActionLabel(title: l.text("Add a memory")) }.buttonStyle(PrimaryButton()) }
+                    if query.isEmpty { journalInvitation }
+                    else { Text(l.text("No matching memories")).font(.system(size: 23, design: .serif)) }
                 } else {
                     ForEach(matches) { trip in
                         NavigationLink { TripDetail(tripID: trip.id, l: l, initialSection: 1) } label: { memoryCard(trip) }.buttonStyle(.plain)
@@ -197,7 +203,21 @@ struct JournalOverview: View {
         }.sheet(item: $selectedTrip) { trip in EntryEditor(l: l, tripID: trip.id, existing: nil) }
     }
     private var journalCover: some View {
-        Image("JournalEditorial").resizable().scaledToFill().frame(height: 205).frame(maxWidth: .infinity).clipped().clipShape(RoundedRectangle(cornerRadius: 20)).accessibilityHidden(true)
+        EditorialBanner(artwork: "JournalCoast", height: 290)
+    }
+    private var journalInvitation: some View {
+        HStack(alignment: .center, spacing: 16) {
+            Image("SeaJournal").resizable().scaledToFit().frame(width: 68, height: 68).accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 12) {
+                Text(l.text("Your memories start here.")).font(.system(size: 22, design: .serif)).fixedSize(horizontal: false, vertical: true)
+                if trips.isEmpty {
+                    Button { creating = true } label: { AddActionLabel(title: l.text("New Trip")) }.buttonStyle(PrimaryButton())
+                } else if trips.count == 1, let trip = trips.first {
+                    Button { selectedTrip = trip } label: { AddActionLabel(title: l.text("Add a memory")) }.buttonStyle(PrimaryButton())
+                }
+            }
+        }.frame(maxWidth: .infinity, alignment: .leading).padding(18)
+            .modifier(SatchelGlass(tint: Palette.cream.opacity(0.3), cornerRadius: 20))
     }
     private func memoryCard(_ trip: Trip) -> some View {
         let term = query.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -230,12 +250,8 @@ struct SettingsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                HStack(alignment: .center) {
-                    EditorialTitle(title: l.text("Me"), subtitle: l.text("Your travel journal stays on this device."))
-                    Image("NavMe").resizable().scaledToFit().frame(width: 86, height: 74).accessibilityHidden(true)
-                }
                 VStack(alignment: .leading, spacing: 12) {
-                    Text(l.text("Your collection")).font(.system(size: 22, design: .serif))
+                    Image("NavMe").resizable().scaledToFit().frame(width: 62, height: 62).accessibilityHidden(true)
                     HStack(spacing: 18) {
                         collectionCount(store.trips.count, l.text("Trips"))
                         collectionCount(store.trips.reduce(0) { $0 + $1.entries.count }, l.text("Memories"))
@@ -244,19 +260,28 @@ struct SettingsView: View {
                 }.foregroundColor(.white).frame(maxWidth: .infinity, minHeight: 145, alignment: .leading).padding(18)
                     .background {
                         GeometryReader { geometry in
-                            Image("SeaJourneyHero").resizable().scaledToFill().frame(width: geometry.size.width, height: geometry.size.height).clipped().overlay(Palette.ink.opacity(0.70)).accessibilityHidden(true)
+                        Image("SeaJourneyHero").resizable().scaledToFill().frame(width: geometry.size.width, height: geometry.size.height).clipped().overlay(Palette.ink.opacity(0.58)).accessibilityHidden(true)
                         }
                     }.clipShape(RoundedRectangle(cornerRadius: 20))
+                NavigationLink { MembershipView(l: l) } label: {
+                    HStack(spacing: 15) {
+                        Image("MembershipArt").resizable().scaledToFit().frame(width: 94, height: 94).accessibilityHidden(true)
+                        VStack(alignment: .leading, spacing: 7) {
+                            Text(l.text("Satchel Membership")).font(.system(size: 21, design: .serif)).multilineTextAlignment(.leading)
+                            Text(l.text("More room for every journey.")).font(.caption).foregroundColor(Palette.muted).multilineTextAlignment(.leading)
+                        }
+                        Spacer(minLength: 0)
+                        Image("NextMark").resizable().scaledToFit().frame(width: 28, height: 28).accessibilityHidden(true)
+                    }.frame(maxWidth: .infinity, minHeight: 110, alignment: .leading).padding(15)
+                        .modifier(SatchelGlass(tint: Palette.seaTint.opacity(0.35), interactive: true, cornerRadius: 20))
+                }.buttonStyle(.plain)
                 VStack(alignment: .leading, spacing: 0) {
-                    Text(l.text("Your Satchel")).font(.system(size: 22, design: .serif)).padding(.bottom, 12)
                     VStack(spacing: 0) {
-                        NavigationLink { MembershipView(l: l) } label: { settingRow("Satchel Membership", artwork: "MembershipArt") }.buttonStyle(.plain)
                         NavigationLink { TemplateView(l: l) } label: { settingRow("Common list", artwork: "SeaTrips") }.buttonStyle(.plain)
                         Button { do { exportFile = ExportFile(url: try store.export()) } catch { store.error = "Your journal could not be exported. Please try again." } } label: { settingRow("Export your journal", artwork: "SeaJournal") }.buttonStyle(.plain)
                     }.padding(.horizontal, 14).modifier(SatchelGlass(tint: Palette.paper.opacity(0.16), cornerRadius: 20))
                 }
                 VStack(alignment: .leading, spacing: 0) {
-                    Text(l.text("More options")).font(.system(size: 22, design: .serif)).padding(.bottom, 12)
                     VStack(spacing: 0) {
                         NavigationLink { PortalEntry(l: l) } label: { settingRow("Online service") }.buttonStyle(.plain)
                         NavigationLink { LegalDocumentView(document: .privacy, l: l) } label: { settingRow("Privacy policy") }.buttonStyle(.plain)
@@ -309,7 +334,6 @@ struct TemplateView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 Button(l.text("Me")) { dismiss() }.buttonStyle(SecondaryButton())
-                EditorialTitle(title: l.text("Common list"))
                 EditorialBanner(artwork: "PackingEditorial")
                 ForEach($draft) { $item in
                     VStack(alignment: .leading, spacing: 8) {

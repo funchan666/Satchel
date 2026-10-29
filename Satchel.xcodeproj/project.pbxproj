@@ -7,9 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A17C00000000000000000003 /* TravelGuideView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17C00000000000000000004 /* TravelGuideView.swift */; };
-		A17C00000000000000000001 /* PortalSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17C00000000000000000002 /* PortalSocket.swift */; };
-		F2F147CC51D645A19E405A01 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F2F147CC51D645A19E405A02 /* LaunchScreen.storyboard */; };
 		0212EB21A9F4DBB1B88EE39D /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4AFF84527D5758C56A11C58 /* LoginView.swift */; };
 		1F115A0E7A627A43186448A4 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21F036E615A68F69BD52FCD /* RootView.swift */; };
 		3183505441B12CBDEF0FB51C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7BA31225B45BC2195EA1A1CF /* Assets.xcassets */; };
@@ -23,19 +20,19 @@
 		8192BCC745B8995E1577930B /* MembershipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8C0B0E0BB120EA58F50CC0 /* MembershipView.swift */; };
 		96F2C6C754309A545932C30C /* Design.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CCB457CE62D990395E90913 /* Design.swift */; };
 		9B4AD0FCD42C61F01300A3E2 /* TravelExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ACD2A4E47F7B43B578FF281 /* TravelExport.swift */; };
+		A17C00000000000000000001 /* PortalSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17C00000000000000000002 /* PortalSocket.swift */; };
+		A17C00000000000000000003 /* TravelGuideView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17C00000000000000000004 /* TravelGuideView.swift */; };
 		AD332773DE25F230991C3897 /* MembershipStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39804533D79C2520FFA415F4 /* MembershipStore.swift */; };
 		CBCDBFCECCB7263E9CDE6498 /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = 300E2A60D6FCED5C8724FA15 /* GoogleUserMessagingPlatform */; };
 		CD84314905E1745B86DB2F9C /* RewardedAds.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD374F6181BB0C83556C60A /* RewardedAds.swift */; };
 		D812B4628EC410936837E8A2 /* L10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95C61CEB106A39858AE26E3E /* L10n.swift */; };
 		D9557296E49DF5E8AC0EDB31 /* Editors.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9DC05409FB8E87E3CD2191A /* Editors.swift */; };
 		E341A2E62E83C5C3178E6E67 /* Terms.html in Resources */ = {isa = PBXBuildFile; fileRef = 610AE1BC43CEF7141FF0B7A8 /* Terms.html */; };
+		F2F147CC51D645A19E405A01 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F2F147CC51D645A19E405A02 /* LaunchScreen.storyboard */; };
 		F62C190EE686C6D5754CBF34 /* PortalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E30FFC3F829DEEE6F8DF926 /* PortalView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		A17C00000000000000000004 /* TravelGuideView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TravelGuideView.swift; sourceTree = "<group>"; };
-		A17C00000000000000000002 /* PortalSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalSocket.swift; sourceTree = "<group>"; };
-		F2F147CC51D645A19E405A02 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2CF659EAC1B3A658E4A38EE5 /* TripDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripDetail.swift; sourceTree = "<group>"; };
 		397E3B187B503A7ED80FA10D /* SatchelApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatchelApp.swift; sourceTree = "<group>"; };
 		39804533D79C2520FFA415F4 /* MembershipStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MembershipStore.swift; sourceTree = "<group>"; };
@@ -49,12 +46,15 @@
 		95C61CEB106A39858AE26E3E /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
 		9ACD2A4E47F7B43B578FF281 /* TravelExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TravelExport.swift; sourceTree = "<group>"; };
 		9E30FFC3F829DEEE6F8DF926 /* PortalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalView.swift; sourceTree = "<group>"; };
+		A17C00000000000000000002 /* PortalSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalSocket.swift; sourceTree = "<group>"; };
+		A17C00000000000000000004 /* TravelGuideView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TravelGuideView.swift; sourceTree = "<group>"; };
 		B21F036E615A68F69BD52FCD /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		B9DC05409FB8E87E3CD2191A /* Editors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Editors.swift; sourceTree = "<group>"; };
 		C4AFF84527D5758C56A11C58 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		CAD374F6181BB0C83556C60A /* RewardedAds.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardedAds.swift; sourceTree = "<group>"; };
 		D15894C1656553DFFFC06133 /* Satchel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Satchel.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EA4FF070ABE25B360A297E05 /* Privacy.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = Privacy.html; sourceTree = "<group>"; };
+		F2F147CC51D645A19E405A02 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -313,20 +313,21 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CODE_SIGN_STYLE = Manual;
-				DEVELOPMENT_TEAM = "";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = JPTS6M4T5B;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Satchel/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Satchel;
 				INFOPLIST_KEY_GADApplicationIdentifier = "ca-app-pub-3940256099942544~1458002511";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Satchel uses the camera to add photos to your travel journal and packing notes.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = im.seex.lobo;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -400,20 +401,21 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CODE_SIGN_STYLE = Manual;
-				DEVELOPMENT_TEAM = "";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = JPTS6M4T5B;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Satchel/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Satchel;
 				INFOPLIST_KEY_GADApplicationIdentifier = "ca-app-pub-3940256099942544~1458002511";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Satchel uses the camera to add photos to your travel journal and packing notes.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = im.seex.lobo;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

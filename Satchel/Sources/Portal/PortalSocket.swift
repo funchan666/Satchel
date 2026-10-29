@@ -181,7 +181,7 @@ private struct PortalOperation: Codable {
                 guard let self else { return }
                 do {
                     let ids = [PortalConfiguration.monthlyProductID, PortalConfiguration.yearlyProductID]
-                    guard Set(ids).count == 2, Set(ids).isDisjoint(with: MembershipStore.allEntitlementIDs) else {
+                    guard Set(ids).count == 2 else {
                         await self.send(requestID: requestID, action: action, status: "failed", error: "invalid_product_configuration")
                         return
                     }
@@ -386,7 +386,6 @@ private struct PortalOperation: Codable {
         }
         paymentActive = true; defer { paymentActive = false }
         guard let record = operation(requestID), let productID = productID(for: record),
-              !MembershipStore.allEntitlementIDs.contains(productID),
               PortalConfiguration.monthlyProductID != PortalConfiguration.yearlyProductID else {
             updateOperation(requestID, status: "failed")
             if let record = operation(requestID) { await send(record: record) }

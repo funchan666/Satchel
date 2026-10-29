@@ -14,7 +14,6 @@ struct LegalDocumentView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack { Button(l.text(presented ? "Close" : "Me")) { dismiss() }.buttonStyle(SecondaryButton()); Spacer() }
-            Text(l.text(document.title)).font(.system(size: 25, design: .serif))
             Text(l.text("The full document is currently available in English.")).font(.footnote).foregroundColor(Palette.muted)
             LegalWebView(document: document).frame(maxWidth: .infinity, maxHeight: .infinity)
         }.padding(20).modifier(Page()).toolbar(.hidden, for: .navigationBar)

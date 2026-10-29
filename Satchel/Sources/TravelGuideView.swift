@@ -9,6 +9,16 @@ private struct GuideMessage: Identifiable {
 private enum GuideTopic: CaseIterable {
     case packing, rain, journal, flight, budget, beach
 
+    var artwork: String {
+        switch self {
+        case .packing: return "NavTrips"
+        case .rain: return "TravelTicket"
+        case .journal: return "SeaJournal"
+        case .flight: return "NavMe"
+        case .budget: return "MembershipArt"
+        case .beach: return "NavGuide"
+        }
+    }
     var question: String {
         switch self {
         case .packing: return "What should I pack?"
@@ -55,24 +65,30 @@ struct TravelGuideView: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 18) {
-                        HStack(alignment: .top) {
-                            VStack(alignment: .leading, spacing: 5) {
-                                Text(l.text("Travel guide")).font(.system(size: 32, design: .serif)).accessibilityAddTraits(.isHeader)
-                                Text(l.text("Ideas for your journey")).font(.caption.weight(.semibold)).foregroundColor(Palette.ocean)
+                        if messages.isEmpty {
+                            ZStack(alignment: .bottomLeading) {
+                                EditorialBanner(artwork: "GuideHero", height: 235)
+                                HStack(alignment: .center, spacing: 12) {
+                                    Image("NavGuide").resizable().scaledToFit().frame(width: 52, height: 52).accessibilityHidden(true)
+                                    Text(l.text("Ask about packing, planning or journaling."))
+                                        .font(.system(size: 20, design: .serif)).fixedSize(horizontal: false, vertical: true)
+                                }.padding(14).frame(maxWidth: .infinity, alignment: .leading)
+                                    .modifier(SatchelGlass(tint: Palette.cream.opacity(0.5), cornerRadius: 16)).padding(12)
                             }
-                            Spacer()
-                            Image("NavGuide").resizable().scaledToFit().frame(width: 58, height: 58).accessibilityHidden(true)
                         }
                         if messages.isEmpty {
-                            Image("GuideHero").resizable().scaledToFill().frame(height: 165).frame(maxWidth: .infinity).clipped().clipShape(RoundedRectangle(cornerRadius: 18)).accessibilityHidden(true)
-                            Text(l.text("Ask about packing, planning or journaling.")).font(.system(size: 22, design: .serif)).fixedSize(horizontal: false, vertical: true)
-                        }
-                        if messages.isEmpty {
-                            Text(l.text("Try a question")).font(.subheadline.weight(.semibold)).foregroundColor(Palette.muted)
                             ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 8) {
+                                HStack(spacing: 10) {
                                     ForEach(GuideTopic.allCases, id: \.question) { topic in
-                                        Button(l.text(topic.question)) { ask(l.text(topic.question)) }.buttonStyle(SecondaryButton()).fixedSize(horizontal: true, vertical: false)
+                                        Button { ask(l.text(topic.question)) } label: {
+                                            VStack(alignment: .leading, spacing: 10) {
+                                                Image(topic.artwork)
+                                                    .resizable().scaledToFit().frame(width: 46, height: 46).accessibilityHidden(true)
+                                                Text(l.text(topic.question)).font(.subheadline.weight(.medium)).multilineTextAlignment(.leading)
+                                                    .fixedSize(horizontal: false, vertical: true)
+                                            }.frame(width: 150).frame(minHeight: 126, alignment: .topLeading).padding(14)
+                                                .modifier(SatchelGlass(tint: Palette.cream.opacity(0.25), interactive: true, cornerRadius: 16))
+                                        }.buttonStyle(.plain)
                                     }
                                 }
                             }

@@ -25,10 +25,7 @@ struct NewTripView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     ErrorNotice(l: l)
-                    HStack(alignment: .top) {
-                        EditorialTitle(title: l.text("New Trip"))
-                        Button(l.text("Cancel")) { dismiss() }.buttonStyle(SecondaryButton())
-                    }
+                    HStack { Spacer(); Button(l.text("Cancel")) { dismiss() }.buttonStyle(SecondaryButton()) }
                     Group {
                         if let coverData, let image = UIImage(data: coverData) { Image(uiImage: image).resizable().scaledToFill() }
                         else { Image("SeaJourneyHero").resizable().scaledToFill() }
@@ -100,7 +97,6 @@ struct ItemEditor: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 15) {
                 ErrorNotice(l: l)
-                EditorialTitle(title: l.text("Add item"))
                 EditorialBanner(artwork: "PackingEditorial")
                 VStack(alignment: .leading, spacing: 14) { input("Item name", $name); input("Category", $category) }
                     .padding(14).modifier(SatchelGlass(tint: Palette.cream.opacity(0.2), cornerRadius: 18))
@@ -163,7 +159,6 @@ struct EntryEditor: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 17) {
                 ErrorNotice(l: l)
-                EditorialTitle(title: l.text("Add a memory"))
                 EditorialBanner(artwork: "JournalEditorial")
                 Text(l.text("Date")).font(.headline)
                 TextField("YYYY-MM-DD HH:mm", text: $dateText).modifier(FieldStyle())
@@ -212,7 +207,6 @@ struct TripEditor: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 ErrorNotice(l: l)
-                EditorialTitle(title: l.text("Edit trip"))
                 EditorialBanner(artwork: "SeaJourneyHero")
                 labelField("Destination", $destination)
                 labelField("Start date", $start)

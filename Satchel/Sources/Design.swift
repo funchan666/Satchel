@@ -53,16 +53,6 @@ struct FieldStyle: ViewModifier {
         content.padding(15).background(Palette.cream.opacity(0.9), in: RoundedRectangle(cornerRadius: 14))
     }
 }
-struct EditorialTitle: View {
-    let title: String
-    var subtitle: String = ""
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title).font(.system(size: 32, weight: .regular, design: .serif))
-            if !subtitle.isEmpty { Text(subtitle).font(.subheadline).foregroundColor(Palette.muted) }
-        }.frame(maxWidth: .infinity, alignment: .leading)
-    }
-}
 struct EditorialBanner: View {
     let artwork: String
     var height: CGFloat = 110
