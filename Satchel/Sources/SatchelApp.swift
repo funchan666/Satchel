@@ -48,8 +48,10 @@ import UIKit
         }
         // An unfilled or slow app-open request must never block the app indefinitely.
         Task { @MainActor in
-            do { try await Task.sleep(nanoseconds: 5_000_000_000) } catch { return }
-            if !ads.openConsentInProgress && !ads.openAdIsPresenting {
+            while !startupAdResolved {
+                do { try await Task.sleep(nanoseconds: 5_000_000_000) } catch { return }
+                if ads.openConsentInProgress { continue }
+                if ads.openAdIsPresenting { return }
                 ads.cancelPendingOpen()
                 startupAdResolved = true
                 finishStartupIfReady()
