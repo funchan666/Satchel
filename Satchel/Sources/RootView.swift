@@ -332,7 +332,7 @@ struct TemplateView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 BackTagButton(label: l.text("Back")) { dismiss() }
-                EditorialBanner(artwork: "PackingEditorial")
+                EditorialBanner(artwork: "PackingEditorial", height: 170)
                 ForEach($draft) { $item in
                     VStack(alignment: .leading, spacing: 8) {
                         TextField(l.text("Item name"), text: $item.name).modifier(FieldStyle())
@@ -340,15 +340,19 @@ struct TemplateView: View {
                         TextField(l.text("Category"), text: $item.category).modifier(FieldStyle())
                             .onChange(of: item.category) { _ in item.suggestedCategoryKey = nil }
                         Button(l.text("Delete")) { draft.removeAll { $0.id == item.id } }.buttonStyle(SecondaryButton())
-                    }.padding(12).background(Palette.cream.opacity(0.5), in: RoundedRectangle(cornerRadius: 12))
+                    }.padding(14).modifier(SatchelGlass(tint: Palette.cream.opacity(0.3), cornerRadius: 18))
                 }
-                TextField(l.text("Item name"), text: $name).modifier(FieldStyle())
-                TextField(l.text("Category"), text: $category).modifier(FieldStyle())
-                Button(l.text("Add item")) {
-                    let n = name.trimmingCharacters(in: .whitespacesAndNewlines), c = category.trimmingCharacters(in: .whitespacesAndNewlines)
-                    if !n.isEmpty && !c.isEmpty { draft.append(PackingItem(name: n, category: c)); name = ""; category = "" }
-                }.buttonStyle(SecondaryButton())
-                Button(l.text("Save")) { if store.saveTemplate(draft.filter { !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !$0.category.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) { dismiss() } }.buttonStyle(PrimaryButton())
+                VStack(alignment: .leading, spacing: 12) {
+                    TextField(l.text("Item name"), text: $name).modifier(FieldStyle())
+                    TextField(l.text("Category"), text: $category).modifier(FieldStyle())
+                    Button(l.text("Add item")) {
+                        let n = name.trimmingCharacters(in: .whitespacesAndNewlines), c = category.trimmingCharacters(in: .whitespacesAndNewlines)
+                        if !n.isEmpty && !c.isEmpty { draft.append(PackingItem(name: n, category: c)); name = ""; category = "" }
+                    }.buttonStyle(SecondaryButton())
+                }.padding(16).modifier(SatchelGlass(tint: Palette.seaTint.opacity(0.24), cornerRadius: 20))
+                Button { if store.saveTemplate(draft.filter { !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !$0.category.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) { dismiss() } } label: {
+                    Text(l.text("Save")).frame(maxWidth: .infinity)
+                }.buttonStyle(PrimaryButton())
             }.padding(20).frame(maxWidth: 700)
         }.modifier(Page()).toolbar(.hidden, for: .navigationBar).onAppear {
             draft = store.template.map { var item = $0; item.name = item.suggestedNameKey.map(l.text) ?? item.name; item.category = item.suggestedCategoryKey.map(l.text) ?? item.category; return item }
