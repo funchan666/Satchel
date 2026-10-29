@@ -2,9 +2,12 @@ import Foundation
 import StoreKit
 
 @MainActor final class MembershipStore: ObservableObject {
-    static let monthlyID = "satchel.plus.monthly"
-    static let yearlyID = "satchel.plus.yearly"
+    // Reuse Clipo's identifiers for the requested test setup. These products
+    // still need to exist under Satchel's own App Store Connect app.
+    static let monthlyID = "clipo.plus.monthly"
+    static let yearlyID = "clipo.plus.yearly"
     private let productIDs = [monthlyID, yearlyID]
+    static let allEntitlementIDs: Set<String> = [monthlyID, yearlyID, "satchel.plus.monthly", "satchel.plus.yearly"]
     @Published private(set) var products: [Product] = []
     @Published private(set) var isMember = false
     @Published private(set) var entitlementsReady = false
@@ -57,7 +60,7 @@ import StoreKit
         catch { message = "Purchases could not be restored. Please try again." }
     }
     private func process(_ result: VerificationResult<Transaction>) async {
-        guard case .verified(let transaction) = result, productIDs.contains(transaction.productID) else { return }
+        guard case .verified(let transaction) = result, Self.allEntitlementIDs.contains(transaction.productID) else { return }
         if transaction.revocationDate == nil && (transaction.expirationDate.map { $0 > Date() } ?? false) { isMember = true; entitlementsReady = true }
         await transaction.finish(); await refreshEntitlements()
     }
@@ -67,7 +70,7 @@ import StoreKit
     func refreshEntitlements() async {
         var active = false
         for await result in Transaction.currentEntitlements {
-            guard case .verified(let transaction) = result, productIDs.contains(transaction.productID), transaction.revocationDate == nil else { continue }
+            guard case .verified(let transaction) = result, Self.allEntitlementIDs.contains(transaction.productID), transaction.revocationDate == nil else { continue }
             active = true
         }
         isMember = active; entitlementsReady = true

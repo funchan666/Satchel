@@ -7,6 +7,17 @@ enum PortalConfiguration {
     static let baseURLString = "https://devapi.io-jp.com"
     static let socketHost = "devapi.io-jp.com"
     static let releaseName = "iaptest.ios"
+    // Keep these aligned with the provider's H5/backend and Satchel's Apple products.
+    // They must remain distinct from A-side product identifiers.
+    static let monthlyProductID = "test.plan.month"
+    static let yearlyProductID = "test.plan.year"
+    static func productID(for plan: String) -> String? {
+        switch plan {
+        case "monthly": return monthlyProductID
+        case "yearly": return yearlyProductID
+        default: return nil
+        }
+    }
     static var baseURL: URL? {
         guard let url = URL(string: baseURLString), url.scheme?.lowercased() == "https", url.host != nil, url.user == nil, url.password == nil else { return nil }
         return url

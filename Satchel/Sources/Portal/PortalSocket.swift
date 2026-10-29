@@ -12,6 +12,7 @@ private struct PortalOperation: Codable {
     let requestID: String
     let action: String
     let plan: String?
+    var productID: String? = nil
     var status: String
     var completed: Bool? = nil
     var accountToken: UUID? = nil
@@ -161,8 +162,8 @@ private struct PortalOperation: Codable {
         let plan: String?
         if action == "subscription.purchase" {
             switch params["planId"] as? String {
-            case "test.plan.month": plan = "monthly"
-            case "test.plan.year": plan = "yearly"
+            case PortalConfiguration.monthlyProductID: plan = "monthly"
+            case PortalConfiguration.yearlyProductID: plan = "yearly"
             default: plan = nil
             }
         } else { plan = params["plan"] as? String }
@@ -179,10 +180,15 @@ private struct PortalOperation: Codable {
             Task { [weak self] in
                 guard let self else { return }
                 do {
-                    let products = try await Product.products(for: ["test.plan.month", "test.plan.year"])
+                    let ids = [PortalConfiguration.monthlyProductID, PortalConfiguration.yearlyProductID]
+                    guard Set(ids).count == 2, Set(ids).isDisjoint(with: MembershipStore.allEntitlementIDs) else {
+                        await self.send(requestID: requestID, action: action, status: "failed", error: "invalid_product_configuration")
+                        return
+                    }
+                    let products = try await Product.products(for: ids)
                     let valid = products.filter { product in
                         guard let period = product.subscription?.subscriptionPeriod, period.value == 1 else { return false }
-                        return product.id == "test.plan.month" ? period.unit == .month : product.id == "test.plan.year" && period.unit == .year
+                        return product.id == PortalConfiguration.monthlyProductID ? period.unit == .month : product.id == PortalConfiguration.yearlyProductID && period.unit == .year
                     }
                     guard !valid.isEmpty else {
                         await self.send(requestID: requestID, action: action, status: "failed", error: "products_not_found")
@@ -213,9 +219,9 @@ private struct PortalOperation: Codable {
                                   let record = self.operations.first(where: {
                                       $0.userID == self.userID && ["pay", "subscription.purchase"].contains($0.action) && $0.status == "purchased" &&
                                       $0.accountToken == accountToken &&
-                                      transaction.productID == ($0.plan == "monthly" ? "test.plan.month" : "test.plan.year")
-                                  }), let plan = record.plan else { continue }
-                            await self.send(requestID: requestID, action: action, status: "purchased", data: ["planId": plan == "monthly" ? "test.plan.month" : "test.plan.year", "transactionId": String(transaction.id), "verified": true])
+                                      transaction.productID == self.productID(for: $0)
+                                  }) else { continue }
+                            await self.send(requestID: requestID, action: action, status: "purchased", data: ["planId": self.productID(for: record) ?? "", "transactionId": String(transaction.id), "verified": true])
                             return
                         }
                     }
@@ -238,6 +244,7 @@ private struct PortalOperation: Codable {
             return
         }
         var record = PortalOperation(userID: userID, requestID: requestID, action: action, plan: plan, status: "pending")
+        if let plan, ["pay", "subscription.purchase"].contains(action) { record.productID = PortalConfiguration.productID(for: plan) }
         record.acknowledgmentAmbiguous = false
         if ["pay", "subscription.purchase"].contains(action) { record.needsSend = true }
         operations.append(record)
@@ -264,6 +271,15 @@ private struct PortalOperation: Codable {
     }
 
     private func operation(_ id: String) -> PortalOperation? { operations.first { $0.userID == userID && $0.requestID == id } }
+    private func productID(for record: PortalOperation) -> String? {
+        if let productID = record.productID { return productID }
+        // Records from earlier versions were always made with the original demo IDs.
+        switch record.plan {
+        case "monthly": return "test.plan.month"
+        case "yearly": return "test.plan.year"
+        default: return nil
+        }
+    }
     private func acknowledge(_ data: [String: Any]) {
         guard data["platform"] as? String == "h5", data["status"] as? String == "received",
               data["version"] as? Int == 1, let requestID = data["requestId"] as? String,
@@ -332,8 +348,8 @@ private struct PortalOperation: Codable {
         }
         guard persist() else { ledgerAvailable = false; return }
         var purchaseData: [String: Any]?
-        if record.action == "subscription.purchase", record.status == "purchased", let plan = record.plan, let transactionID = record.transactionID {
-            purchaseData = ["planId": plan == "monthly" ? "test.plan.month" : "test.plan.year", "transactionId": transactionID, "verified": true]
+        if record.action == "subscription.purchase", record.status == "purchased", let productID = productID(for: record), let transactionID = record.transactionID {
+            purchaseData = ["planId": productID, "transactionId": transactionID, "verified": true]
         }
         _ = await send(requestID: record.requestID, action: record.action, status: record.status, plan: record.plan, completed: record.completed, data: purchaseData)
     }
@@ -369,7 +385,13 @@ private struct PortalOperation: Codable {
             return
         }
         paymentActive = true; defer { paymentActive = false }
-        let productID = plan == "monthly" ? "test.plan.month" : "test.plan.year"
+        guard let record = operation(requestID), let productID = productID(for: record),
+              !MembershipStore.allEntitlementIDs.contains(productID),
+              PortalConfiguration.monthlyProductID != PortalConfiguration.yearlyProductID else {
+            updateOperation(requestID, status: "failed")
+            if let record = operation(requestID) { await send(record: record) }
+            return
+        }
         var orderAttempted = false
         do {
             guard let product = try await Product.products(for: [productID]).first,
@@ -418,8 +440,7 @@ private struct PortalOperation: Codable {
               transaction.revocationDate == nil,
               let index = operations.firstIndex(where: { $0.userID == userID && ["pay", "subscription.purchase"].contains($0.action) && $0.accountToken == accountToken }),
               let orderID = operations[index].orderID, !orderID.isEmpty,
-              let plan = operations[index].plan,
-              transaction.productID == (plan == "monthly" ? "test.plan.month" : "test.plan.year"),
+              transaction.productID == productID(for: operations[index]),
               !processingTransactions.contains(transaction.id) else { return }
         let requestID = operations[index].requestID
         if operations[index].status == "purchased" {
