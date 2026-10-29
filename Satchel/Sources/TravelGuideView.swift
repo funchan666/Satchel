@@ -75,13 +75,13 @@ struct TravelGuideView: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(spacing: 0) {
-                        Color.clear.frame(height: 190).accessibilityHidden(true)
+                        TabHero(artwork: "GuideHero")
                         VStack(alignment: .leading, spacing: 18) {
                             if messages.isEmpty {
                                 HStack(alignment: .center, spacing: 12) {
                                     Image("NavGuide").resizable().scaledToFit().frame(width: 42, height: 42).accessibilityHidden(true)
                                     Text(l.text("Ask about packing, planning or journaling."))
-                                        .font(.system(size: 20, design: .serif)).fixedSize(horizontal: false, vertical: true)
+                                        .font(.system(.headline, design: .serif)).fixedSize(horizontal: false, vertical: true)
                                 }
                                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 10)], spacing: 10) {
                                     ForEach(Array(GuideTopic.allCases.prefix(showAllTopics ? GuideTopic.allCases.count : 4)), id: \.question) { topic in
@@ -92,15 +92,27 @@ struct TravelGuideView: View {
                                                 Text(l.text(topic.question)).font(.subheadline.weight(.medium))
                                                     .multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
                                                 Spacer(minLength: 0)
-                                            }.frame(maxWidth: .infinity, minHeight: 58, alignment: .leading).padding(12)
-                                                .modifier(PaperSurface(artwork: "CoastalPaper", radius: 16))
+                                            }.frame(maxWidth: .infinity, minHeight: 52, alignment: .leading).padding(10)
+                                                .modifier(PaperSurface(artwork: "ButtonPaper", radius: 14))
                                                 .contentShape(Rectangle())
                                         }.buttonStyle(.plain)
                                     }
                                 }
-                                Button(l.text(showAllTopics ? "Close" : "More options")) {
+                                Button {
                                     withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.2)) { showAllTopics.toggle() }
-                                }.buttonStyle(SecondaryButton())
+                                } label: {
+                                    HStack(spacing: 12) {
+                                        Text(l.text(showAllTopics ? "Show fewer questions" : "More travel questions"))
+                                            .font(.subheadline.weight(.semibold)).foregroundColor(Palette.ink)
+                                            .multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
+                                        Spacer(minLength: 4)
+                                        Image("MoreMarkV2").resizable().scaledToFit().frame(width: 42, height: 42)
+                                            .rotationEffect(.degrees(showAllTopics ? 180 : 0)).accessibilityHidden(true)
+                                    }.frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                                        .padding(.horizontal, 12).padding(.vertical, 4)
+                                        .modifier(PaperSurface(artwork: "ButtonSelected", radius: 16))
+                                        .contentShape(Rectangle())
+                                }.buttonStyle(GuideDisclosureStyle())
                             }
                             ForEach(messages) { message in
                                 HStack {
@@ -112,32 +124,32 @@ struct TravelGuideView: View {
                                 }
                             }
                             if waiting { Text(l.text("Preparing a tip…")).font(.footnote).foregroundColor(Palette.muted).accessibilityLabel(l.text("Preparing a tip…")) }
+                            if let quotaNotice {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text(l.text(quotaNotice)).font(.footnote).foregroundColor(Palette.muted)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                    if membership.entitlementsReady && !membership.isMember && usedFreeQuestionToday {
+                                        NavigationLink { MembershipView(l: l) } label: { Text(l.text("Satchel Membership")) }
+                                            .buttonStyle(SecondaryButton())
+                                    }
+                                }.frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            HStack(alignment: .center, spacing: 10) {
+                                TextField(l.text("Ask a travel question"), text: $draft, axis: .vertical)
+                                    .lineLimit(1...3).focused($focused).submitLabel(.send).onSubmit { ask(draft) }
+                                    .modifier(FieldStyle())
+                                Button(l.text("Send")) { ask(draft) }.buttonStyle(TabPrimaryButton())
+                                    .disabled(waiting || draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                            }
                             Color.clear.frame(height: 1).id("guide-bottom")
                         }.padding(.horizontal, 20).padding(.top, 18).padding(.bottom, 18).frame(maxWidth: 700)
                             .background(Palette.paper)
                     }.frame(maxWidth: .infinity)
-                }.background(alignment: .top) {
-                    TabHero(artwork: "GuideHero").ignoresSafeArea(.container, edges: .top)
-                }
+                }.ignoresSafeArea(.container, edges: .top)
                 .onChange(of: messages.count) { _ in withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { proxy.scrollTo("guide-bottom", anchor: .bottom) } }
+                .onChange(of: focused) { if $0 { proxy.scrollTo("guide-bottom", anchor: .bottom) } }
+                .onChange(of: quotaNotice) { if $0 != nil { proxy.scrollTo("guide-bottom", anchor: .bottom) } }
             }
-            if let quotaNotice {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(l.text(quotaNotice)).font(.footnote).foregroundColor(Palette.muted)
-                        .fixedSize(horizontal: false, vertical: true)
-                    if membership.entitlementsReady && !membership.isMember && usedFreeQuestionToday {
-                        NavigationLink { MembershipView(l: l) } label: { Text(l.text("Satchel Membership")) }
-                            .buttonStyle(SecondaryButton())
-                    }
-                }.frame(maxWidth: 700, alignment: .leading).padding(.horizontal, 20).padding(.top, 8)
-            }
-            HStack(alignment: .center, spacing: 10) {
-                TextField(l.text("Ask a travel question"), text: $draft, axis: .vertical)
-                    .lineLimit(1...3).focused($focused).submitLabel(.send).onSubmit { ask(draft) }
-                    .modifier(FieldStyle())
-                Button(l.text("Send")) { ask(draft) }.buttonStyle(TabPrimaryButton())
-                    .disabled(waiting || draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-            }.padding(.horizontal, 20).padding(.vertical, 10).frame(maxWidth: 700)
         }
         .onChange(of: isActive) { active in if !active { focused = false } }
         .onChange(of: scenePhase) { phase in
@@ -173,5 +185,11 @@ struct TravelGuideView: View {
             messages.append(GuideMessage(text: answer, isUser: false))
             waiting = false
         }
+    }
+}
+
+private struct GuideDisclosureStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label.opacity(configuration.isPressed ? 0.7 : 1)
     }
 }

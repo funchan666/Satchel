@@ -16,7 +16,7 @@ enum Palette {
 }
 struct Page: ViewModifier {
     func body(content: Content) -> some View {
-        content.foregroundColor(Palette.ink)
+        content.font(.subheadline).foregroundColor(Palette.ink)
             .background {
                 ZStack {
                     Palette.paper
@@ -95,7 +95,7 @@ struct SecondaryButton: ButtonStyle {
 }
 struct FieldStyle: ViewModifier {
     func body(content: Content) -> some View {
-        content.padding(.horizontal, 15).padding(.vertical, 13).frame(minHeight: 48)
+        content.font(.subheadline).padding(.horizontal, 15).padding(.vertical, 13).frame(minHeight: 48)
             .modifier(PaperSurface(artwork: "ButtonPaper", radius: 14))
     }
 }
@@ -127,7 +127,7 @@ struct PhotoView: View {
     var body: some View {
         GeometryReader { geometry in
             Group { if let image = store.image(name) { Image(uiImage: image).resizable().scaledToFill() }
-            else { Image("SeaJourneyHero").resizable().scaledToFill() } }
+            else { Image("CoverPaperV2").resizable().scaledToFill().accessibilityHidden(true) } }
             .frame(width: geometry.size.width, height: geometry.size.height).clipped()
         }
     }
@@ -207,7 +207,7 @@ struct ChoiceButton: View {
         Button(action: action) {
             HStack(spacing: 6) {
                 if selected { Image("FlatCheckOn").resizable().scaledToFit().frame(width: 24, height: 24).accessibilityHidden(true) }
-                Text(title).font(.system(size: 15, weight: selected ? .bold : .semibold))
+                Text(title).font(.subheadline.weight(selected ? .bold : .semibold))
             }.foregroundColor(Palette.ink)
                 .padding(.horizontal, 16).padding(.vertical, 12).frame(minHeight: 48)
                 .modifier(PaperSurface(artwork: selected ? "ButtonSelected" : "ButtonPaper", radius: 14))

@@ -8,28 +8,25 @@ struct LoginView: View {
 
     var body: some View {
         GeometryReader { container in
-            ZStack {
-                GeometryReader { background in
-                    Image("LoginCoast")
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: background.size.width, height: background.size.height)
-                        .clipped()
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    Spacer(minLength: 100)
+                    signInPanel
                 }
-                .ignoresSafeArea(.container)
-                .accessibilityHidden(true)
-
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 0) {
-                        Spacer(minLength: 100)
-                        signInPanel
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 18)
-                    .padding(.bottom, 20)
-                    .frame(maxWidth: 580)
-                    .frame(minHeight: container.size.height, alignment: .top)
-                    .frame(maxWidth: .infinity)
+                .padding(.horizontal, 20)
+                .padding(.top, 18)
+                .padding(.bottom, 20)
+                .frame(maxWidth: 580)
+                .frame(minHeight: container.size.height, alignment: .top)
+                .frame(maxWidth: .infinity)
+                .background {
+                    GeometryReader { background in
+                        Image("LoginCoast")
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: background.size.width, height: background.size.height)
+                            .clipped()
+                    }.ignoresSafeArea(.container).accessibilityHidden(true)
                 }
             }
         }
@@ -41,7 +38,7 @@ struct LoginView: View {
     private var signInPanel: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(l.text("A little place for everything your journey holds."))
-                .font(.system(size: 24, weight: .regular, design: .serif))
+                .font(.system(.title3, design: .serif))
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader)
 

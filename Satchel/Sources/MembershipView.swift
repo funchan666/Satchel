@@ -42,7 +42,7 @@ struct MembershipView: View {
         HStack(alignment: .center, spacing: 16) {
             Image("MembershipArt").resizable().scaledToFit().frame(width: 100, height: 100).accessibilityHidden(true)
             Text(l.text("More room for every journey."))
-                .font(.system(size: 24, design: .serif)).fixedSize(horizontal: false, vertical: true)
+                .font(.system(.title3, design: .serif)).fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
         }.frame(maxWidth: .infinity, alignment: .leading).padding(18)
             .modifier(SatchelGlass(tint: Palette.seaTint.opacity(0.30), cornerRadius: 22))
@@ -92,12 +92,12 @@ struct MembershipView: View {
                     .frame(width: 48, height: 48).accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 5) {
                     if let product, let period = periodDescription(product) {
-                        Text(period).font(.system(size: 20, design: .serif)).fixedSize(horizontal: false, vertical: true)
+                        Text(period).font(.system(.headline, design: .serif)).fixedSize(horizontal: false, vertical: true)
                         Text(product.displayPrice + " / " + period)
                             .font(.subheadline.weight(.semibold)).foregroundColor(Palette.ocean)
                     } else {
                         Text(l.text(monthly ? "Monthly membership" : "Yearly membership"))
-                            .font(.system(size: 20, design: .serif)).fixedSize(horizontal: false, vertical: true)
+                            .font(.system(.headline, design: .serif)).fixedSize(horizontal: false, vertical: true)
                     }
                 }
                 Spacer(minLength: 0)

@@ -24,19 +24,51 @@ struct NewTripView: View {
         ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     ErrorNotice(l: l)
-                    BackTagButton(label: l.text("Back")) { dismiss() }
-                    Group {
-                        if let coverData, let image = UIImage(data: coverData) { Image(uiImage: image).resizable().scaledToFill() }
-                        else { Image("SeaJourneyHero").resizable().scaledToFill() }
-                    }.frame(height: 165).frame(maxWidth: .infinity).clipped().clipShape(RoundedRectangle(cornerRadius: 18))
-                        .accessibilityLabel(l.text("Change cover"))
-                    PhotoSelector(label: l.text("Change cover"), cameraLabel: l.text("Camera"), cameraError: l.text("Camera access is unavailable. Check your device settings.")) { coverData = $0 }
-                    VStack(alignment: .leading, spacing: 10) {
+                    HStack(spacing: 12) {
+                        BackTagButton(label: l.text("Back")) { dismiss() }
+                        Text(l.text("Create trip")).font(.system(.title3, design: .serif))
+                        Spacer(minLength: 0)
+                    }
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack(alignment: .firstTextBaseline) {
+                            Text(l.text("Cover photo")).font(.headline)
+                            Spacer()
+                            Text(l.text("Optional")).font(.subheadline).foregroundColor(Palette.muted)
+                        }
+                        if let coverData, let image = UIImage(data: coverData) {
+                            GeometryReader { geometry in
+                                Image(uiImage: image).resizable().scaledToFill()
+                                    .frame(width: geometry.size.width, height: geometry.size.height).clipped()
+                            }.frame(height: 165).clipShape(RoundedRectangle(cornerRadius: 18))
+                                .accessibilityLabel(l.text("Cover photo"))
+                        } else {
+                            ZStack(alignment: .leading) {
+                                GeometryReader { geometry in
+                                    Image("CoverPaperV2").resizable().scaledToFill()
+                                        .frame(width: geometry.size.width, height: geometry.size.height).clipped()
+                                }.accessibilityHidden(true)
+                                VStack(alignment: .leading, spacing: 5) {
+                                    Text(l.text("No cover photo yet"))
+                                        .font(.subheadline.weight(.semibold)).fixedSize(horizontal: false, vertical: true)
+                                    Text(l.text("Add one whenever you like."))
+                                        .font(.footnote).foregroundColor(Palette.muted).fixedSize(horizontal: false, vertical: true)
+                                }.frame(maxWidth: 180, alignment: .leading).padding(16)
+                            }.frame(minHeight: 125).clipShape(RoundedRectangle(cornerRadius: 16))
+                        }
+                        PhotoSelector(label: l.text(coverData == nil ? "Add photo" : "Change cover"), cameraLabel: l.text("Camera"), cameraError: l.text("Camera access is unavailable. Check your device settings.")) { data in
+                            guard UIImage(data: data) != nil else { store.error = "Could not load the photo. Please try again."; return }
+                            coverData = data
+                        }
+                        if coverData != nil {
+                            Button(l.text("Remove cover")) { coverData = nil }.buttonStyle(SecondaryButton())
+                        }
+                    }
+                    VStack(alignment: .leading, spacing: 12) {
                         field(l.text("Destination"), text: $destination)
                         field(l.text("Start date") + " · YYYY-MM-DD", text: $startText)
                         field(l.text("End date") + " · YYYY-MM-DD", text: $endText)
-                    }
-                    Text(l.text("Trip type")).font(.system(size: 22, design: .serif))
+                    }.padding(14).modifier(SatchelGlass(tint: Palette.cream.opacity(0.25), cornerRadius: 18))
+                    Text(l.text("Trip type")).font(.system(.headline, design: .serif))
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             ForEach(TravelKind.allCases, id: \.self) { value in
@@ -46,7 +78,7 @@ struct NewTripView: View {
                         }
                     }
                     if !store.trips.isEmpty {
-                        Text(l.text("Copy a previous list")).font(.system(size: 22, design: .serif))
+                        Text(l.text("Copy a previous list")).font(.system(.headline, design: .serif))
                         ChoiceButton(title: l.text("Suggested list"), selected: copyID == nil && !useTemplate, selectedLabel: l.text("Selected"), unselectedLabel: l.text("Not selected")) { copyID = nil; useTemplate = false }
                         ForEach(store.trips) { trip in
                             ChoiceButton(title: trip.destination, selected: copyID == trip.id, selectedLabel: l.text("Selected"), unselectedLabel: l.text("Not selected")) { copyID = trip.id; useTemplate = false }
@@ -61,8 +93,8 @@ struct NewTripView: View {
     private func field(_ title: String, text: Binding<String>) -> some View {
         VStack(alignment: .leading, spacing: 7) {
             Text(title).font(.caption.weight(.semibold)).foregroundColor(Palette.muted)
-            TextField(title, text: text).font(.body).modifier(FieldStyle())
-        }.padding(12).modifier(SatchelGlass(tint: Palette.cream.opacity(0.25), cornerRadius: 18))
+            TextField(title, text: text).font(.subheadline).modifier(FieldStyle())
+        }
     }
     private func create() {
         guard !destination.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
