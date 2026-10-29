@@ -241,9 +241,7 @@ struct JournalOverview: View {
 }
 struct SettingsView: View {
     @EnvironmentObject private var store: TravelStore
-    @EnvironmentObject private var ads: RewardedAds
     @State private var exportFile: ExportFile?
-    @State private var privacyError = false
     let l: L10n
     @AppStorage("satchel.language") private var language = "en"
     private let options = [("en", "English"), ("zh-Hans", "简体中文"), ("zh-Hant", "繁體中文"), ("ja", "日本語"), ("ko", "한국어"), ("es", "Español"), ("fr", "Français"), ("de", "Deutsch"), ("pt", "Português")]
@@ -283,13 +281,8 @@ struct SettingsView: View {
                 }
                 VStack(alignment: .leading, spacing: 0) {
                     VStack(spacing: 0) {
-                        NavigationLink { PortalEntry(l: l) } label: { settingRow("Online service") }.buttonStyle(.plain)
                         NavigationLink { LegalDocumentView(document: .privacy, l: l) } label: { settingRow("Privacy policy") }.buttonStyle(.plain)
                         NavigationLink { LegalDocumentView(document: .terms, l: l) } label: { settingRow("Terms of use") }.buttonStyle(.plain)
-                        if ads.privacyOptionsRequired {
-                            Button { Task { do { try await ads.showPrivacyOptions(from: nil) } catch { privacyError = true } } } label: { settingRow("Ad privacy choices") }.buttonStyle(.plain)
-                        }
-                        if privacyError { Text(l.text("Privacy options are unavailable right now.")).font(.footnote).foregroundColor(Palette.rust).padding(.vertical, 8) }
                     }.padding(.horizontal, 14).modifier(SatchelGlass(tint: Palette.paper.opacity(0.16), cornerRadius: 20))
                 }
                 VStack(alignment: .leading, spacing: 10) {
