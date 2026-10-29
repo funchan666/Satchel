@@ -31,6 +31,7 @@ struct NewTripView: View {
                     }.frame(height: 165).frame(maxWidth: .infinity).clipped().clipShape(RoundedRectangle(cornerRadius: 18))
                         .accessibilityLabel(l.text("Change cover"))
                     PhotoSelector(label: l.text("Change cover"), cameraLabel: l.text("Camera"), cameraError: l.text("Camera access is unavailable. Check your device settings.")) { coverData = $0 }
+                        .padding(10).modifier(SatchelGlass(tint: Palette.cream.opacity(0.28), cornerRadius: 18))
                     VStack(alignment: .leading, spacing: 15) {
                         field(l.text("Destination"), text: $destination)
                         field(l.text("Start date") + " · YYYY-MM-DD", text: $startText)
@@ -99,13 +100,16 @@ struct ItemEditor: View {
                 EditorialBanner(artwork: "PackingEditorial")
                 VStack(alignment: .leading, spacing: 14) { input("Item name", $name); input("Category", $category) }
                     .padding(14).modifier(SatchelGlass(tint: Palette.cream.opacity(0.2), cornerRadius: 18))
-                HStack {
-                    Text(l.text("Quantity")); Spacer()
-                    Button(l.text("Less")) { quantity = max(1, quantity - 1) }.buttonStyle(SecondaryButton())
-                    Text("\(quantity)").frame(minWidth: 32)
-                    Button(l.text("More")) { quantity = min(999, quantity + 1) }.buttonStyle(SecondaryButton())
-                }
-                input("Where is it?", $location); input("Notes", $notes)
+                VStack(alignment: .leading, spacing: 14) {
+                    HStack {
+                        Text(l.text("Quantity")); Spacer()
+                        Button(l.text("Less")) { quantity = max(1, quantity - 1) }.buttonStyle(SecondaryButton())
+                        Text("\(quantity)").monospacedDigit().frame(minWidth: 32)
+                        Button(l.text("More")) { quantity = min(999, quantity + 1) }.buttonStyle(SecondaryButton())
+                    }
+                    input("Where is it?", $location)
+                    input("Notes", $notes)
+                }.padding(14).modifier(SatchelGlass(tint: Palette.cream.opacity(0.25), cornerRadius: 18))
                 Button { needsReturn.toggle() } label: { HStack { Text(l.text("Bring back")); Spacer(); Image(needsReturn ? "FlatCheckOn" : "FlatCheckOff").resizable().scaledToFit().frame(width: 40, height: 40).accessibilityHidden(true) } }.buttonStyle(SecondaryButton()).accessibilityValue(needsReturn ? l.text("Selected") : l.text("Not selected"))
                 PhotoSelector(label: l.text("Add photo"), cameraLabel: l.text("Camera"), cameraError: l.text("Camera access is unavailable. Check your device settings.")) { data in
                     if let name = store.savePhoto(data) {
@@ -160,13 +164,15 @@ struct EntryEditor: View {
                 ErrorNotice(l: l)
                 BackTagButton(label: l.text("Back")) { store.removeUnusedPhotos(Set(photos)); dismiss() }
                 EditorialBanner(artwork: "JournalEditorial")
-                Text(l.text("Date")).font(.headline)
-                TextField("YYYY-MM-DD HH:mm", text: $dateText).modifier(FieldStyle())
-                if invalidDate { Text(l.text("Please check the date and time.")).foregroundColor(Palette.rust).font(.footnote) }
-                TextEditor(text: $text).scrollContentBackground(.hidden).frame(minHeight: 140).padding(8).background(Palette.cream, in: RoundedRectangle(cornerRadius: 12))
-                    .overlay(alignment: .topLeading) {
-                        if text.isEmpty { Text(l.text("Write a little something...")).foregroundColor(Palette.muted).padding(.horizontal, 14).padding(.top, 16).allowsHitTesting(false) }
-                    }.accessibilityLabel(l.text("Write a little something..."))
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(l.text("Date")).font(.headline)
+                    TextField("YYYY-MM-DD HH:mm", text: $dateText).modifier(FieldStyle())
+                    if invalidDate { Text(l.text("Please check the date and time.")).foregroundColor(Palette.rust).font(.footnote) }
+                    TextEditor(text: $text).scrollContentBackground(.hidden).frame(minHeight: 160).padding(8).background(Palette.cream.opacity(0.8), in: RoundedRectangle(cornerRadius: 12))
+                        .overlay(alignment: .topLeading) {
+                            if text.isEmpty { Text(l.text("Write a little something...")).foregroundColor(Palette.muted).padding(.horizontal, 14).padding(.top, 16).allowsHitTesting(false) }
+                        }.accessibilityLabel(l.text("Write a little something..."))
+                }.padding(16).modifier(SatchelGlass(tint: Palette.cream.opacity(0.25), cornerRadius: 20))
                 PhotoSelector(label: l.text("Add photo"), cameraLabel: l.text("Camera"), cameraError: l.text("Camera access is unavailable. Check your device settings.")) { data in if let name = store.savePhoto(data) { photos.append(name) } }
                 ForEach(photos, id: \.self) { photo in
                     HStack { if let image = store.image(photo) { Image(uiImage: image).resizable().scaledToFill().frame(width: 90, height: 80).clipped().clipShape(RoundedRectangle(cornerRadius: 10)) }
@@ -209,10 +215,12 @@ struct TripEditor: View {
                 ErrorNotice(l: l)
                 BackTagButton(label: l.text("Back")) { dismiss() }
                 EditorialBanner(artwork: "SeaJourneyHero")
-                labelField("Destination", $destination)
-                labelField("Start date", $start)
-                labelField("End date", $end)
-                Text("YYYY-MM-DD").font(.caption).foregroundColor(Palette.muted)
+                VStack(alignment: .leading, spacing: 14) {
+                    labelField("Destination", $destination)
+                    labelField("Start date", $start)
+                    labelField("End date", $end)
+                    Text("YYYY-MM-DD").font(.caption).foregroundColor(Palette.muted)
+                }.padding(16).modifier(SatchelGlass(tint: Palette.cream.opacity(0.25), cornerRadius: 20))
                 if invalid { Text(l.text("Please check the destination and dates.")).foregroundColor(Palette.rust) }
                 HStack { Button(l.text("Cancel")) { dismiss() }.buttonStyle(SecondaryButton()); Button(l.text("Save")) { save() }.buttonStyle(PrimaryButton()) }
                 if deleting {

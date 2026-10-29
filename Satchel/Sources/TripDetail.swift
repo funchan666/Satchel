@@ -52,7 +52,12 @@ struct TripDetail: View {
                         if section == 0 { packing(trip) } else { journal(trip) }
                     }.padding(.horizontal, 20).padding(.top, 16).padding(.bottom, 30).frame(maxWidth: 720)
                 }
-            } else { Text(l.text("Trips")) }
+            } else {
+                VStack(alignment: .leading, spacing: 20) {
+                    BackTagButton(label: l.text("Back")) { dismiss() }
+                    Text(l.text("Trips"))
+                }.padding(20).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            }
         }.modifier(Page()).toolbar(.hidden, for: .navigationBar)
             .navigationDestination(isPresented: $showItem) { ItemEditor(l: l, tripID: tripID, existing: editingItem) }
             .navigationDestination(isPresented: $showEntry) { EntryEditor(l: l, tripID: tripID, existing: editingEntry) }
@@ -182,7 +187,8 @@ struct TripDetail: View {
             ErrorNotice(l: l)
             BackTagButton(label: l.text("Back")) { editingLessons = false }
             EditorialBanner(artwork: "JournalCoast", height: 150)
-            TextEditor(text: $lessonDraft).scrollContentBackground(.hidden).frame(minHeight: 180).padding(8).background(Palette.cream, in: RoundedRectangle(cornerRadius: 12))
+            TextEditor(text: $lessonDraft).scrollContentBackground(.hidden).frame(minHeight: 180).padding(14)
+                .modifier(SatchelGlass(tint: Palette.cream.opacity(0.3), cornerRadius: 20))
             HStack { Button(l.text("Cancel")) { editingLessons = false }.buttonStyle(SecondaryButton()); Button(l.text("Save")) { if var current = trip { current.lessons = lessonDraft; if store.update(current) { editingLessons = false } } }.buttonStyle(PrimaryButton()) }
         }.padding(20).frame(maxWidth: 700) }.modifier(Page())
     }
