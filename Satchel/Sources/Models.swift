@@ -30,6 +30,7 @@ struct Trip: Codable, Identifiable {
     var end: Date
     var kind: String
     var cover: String? = nil
+    var isFavorite: Bool? = nil
     var items: [PackingItem] = []
     var entries: [JournalEntry] = []
     var packingPhotos: [String] = []

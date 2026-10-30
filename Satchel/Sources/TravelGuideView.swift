@@ -138,12 +138,11 @@ struct TravelGuideView: View {
                                 TextField(l.text("Ask a travel question"), text: $draft, axis: .vertical)
                                     .lineLimit(1...3).focused($focused).submitLabel(.send).onSubmit { ask(draft) }
                                     .modifier(FieldStyle())
-                                Button(l.text("Send")) { ask(draft) }.buttonStyle(TabPrimaryButton())
+                                Button { ask(draft) } label: { ButtonArtworkLabel(title: l.text("Send"), artwork: "ActionSend") }.buttonStyle(TabPrimaryButton())
                                     .disabled(waiting || draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                             }
                             Color.clear.frame(height: 1).id("guide-bottom")
                         }.padding(.horizontal, 20).padding(.top, 18).padding(.bottom, 18).frame(maxWidth: 700)
-                            .background(Palette.paper)
                     }.frame(maxWidth: .infinity)
                 }.ignoresSafeArea(.container, edges: .top)
                 .onChange(of: messages.count) { _ in withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { proxy.scrollTo("guide-bottom", anchor: .bottom) } }

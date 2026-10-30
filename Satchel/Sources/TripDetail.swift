@@ -32,7 +32,21 @@ struct TripDetail: View {
             if let trip {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
-                        HStack { BackTagButton(label: l.text("Back")) { dismiss() }; Spacer(); Button(l.text("Edit trip")) { editingTrip = true }.buttonStyle(SecondaryButton()) }
+                        ErrorNotice(l: l)
+                        HStack(spacing: 8) {
+                            BackTagButton(label: l.text("Back")) { dismiss() }
+                            Spacer(minLength: 0)
+                            Button {
+                                var updated = trip
+                                updated.isFavorite = trip.isFavorite != true
+                                _ = store.update(updated)
+                            } label: {
+                                Image(trip.isFavorite == true ? "FavoriteOn" : "FavoriteOff")
+                                    .resizable().scaledToFit().frame(width: 52, height: 52).contentShape(Rectangle())
+                            }.buttonStyle(.plain)
+                                .accessibilityLabel(l.text(trip.isFavorite == true ? "Remove from favorites" : "Save trip to favorites"))
+                            Button(l.text("Edit trip")) { editingTrip = true }.buttonStyle(SecondaryButton())
+                        }
                         ZStack(alignment: .bottomLeading) {
                             PhotoView(name: trip.cover).frame(height: 270).frame(maxWidth: .infinity).clipped()
                             VStack(alignment: .leading, spacing: 7) {
@@ -121,7 +135,7 @@ struct TripDetail: View {
                 }
             }
             Button { editingItem = nil; showItem = true } label: { AddActionLabel(title: l.text("Add item")) }.buttonStyle(PrimaryButton())
-            if !trip.items.isEmpty { Button(l.text("Save as common list")) { templateSaved = store.saveTemplate(trip.items.map { var item = $0; item.id = UUID(); item.packed = false; item.returned = false; item.photo = nil; return item }) }.buttonStyle(SecondaryButton()); if templateSaved { Text(l.text("Common list saved")).font(.footnote).foregroundColor(Palette.olive) } }
+            if !trip.items.isEmpty { Button { templateSaved = store.saveTemplate(trip.items.map { var item = $0; item.id = UUID(); item.packed = false; item.returned = false; item.photo = nil; return item }) } label: { ButtonArtworkLabel(title: l.text("Save as common list"), artwork: "ActionSave") }.buttonStyle(SecondaryButton()); if templateSaved { Text(l.text("Common list saved")).font(.footnote).foregroundColor(Palette.olive) } }
             Image("TravelTicket").resizable().scaledToFit().frame(width: 100).accessibilityHidden(true)
             Text(l.text("Packing photos")).font(.system(.headline, design: .serif)).padding(.top, 5)
             ScrollView(.horizontal) { HStack { ForEach(trip.packingPhotos, id: \.self) { name in
@@ -169,14 +183,14 @@ struct TripDetail: View {
                 TextField(l.text("Notes"), text: $photoNote).modifier(FieldStyle())
                 HStack {
                     Button(l.text("Cancel")) { editingPhoto = false }.buttonStyle(SecondaryButton())
-                    Button(l.text("Save")) { if var current = trip { current.packingPhotoNotes[selectedPhoto] = photoNote; if store.update(current) { editingPhoto = false } } }.buttonStyle(PrimaryButton())
-                    Button(l.text("Delete")) { confirmPhotoDeletion = true }.buttonStyle(SecondaryButton())
+                    Button { if var current = trip { current.packingPhotoNotes[selectedPhoto] = photoNote; if store.update(current) { editingPhoto = false } } } label: { ButtonArtworkLabel(title: l.text("Save"), artwork: "ActionSave") }.buttonStyle(PrimaryButton())
                 }
+                Button { confirmPhotoDeletion = true } label: { ButtonArtworkLabel(title: l.text("Delete"), artwork: "ActionDelete") }.buttonStyle(DangerButton())
                 if confirmPhotoDeletion {
                     Text(l.text("Delete this photo?"))
                     HStack {
                         Button(l.text("Cancel")) { confirmPhotoDeletion = false }.buttonStyle(SecondaryButton())
-                        Button(l.text("Delete")) { if var current = trip { current.packingPhotos.removeAll { $0 == selectedPhoto }; current.packingPhotoNotes.removeValue(forKey: selectedPhoto); if store.update(current) { store.removeUnusedPhotos([selectedPhoto]); editingPhoto = false } } }.buttonStyle(PrimaryButton())
+                        Button { if var current = trip { current.packingPhotos.removeAll { $0 == selectedPhoto }; current.packingPhotoNotes.removeValue(forKey: selectedPhoto); if store.update(current) { store.removeUnusedPhotos([selectedPhoto]); editingPhoto = false } } } label: { ButtonArtworkLabel(title: l.text("Delete"), artwork: "ActionDelete") }.buttonStyle(DangerButton())
                     }
                 }
             }.padding(20).padding(.bottom, 28).frame(maxWidth: 700)
@@ -189,7 +203,7 @@ struct TripDetail: View {
             EditorialBanner(artwork: "JournalCoast", height: 150)
             TextEditor(text: $lessonDraft).scrollContentBackground(.hidden).frame(minHeight: 180).padding(14)
                 .modifier(SatchelGlass(tint: Palette.cream.opacity(0.3), cornerRadius: 20))
-            HStack { Button(l.text("Cancel")) { editingLessons = false }.buttonStyle(SecondaryButton()); Button(l.text("Save")) { if var current = trip { current.lessons = lessonDraft; if store.update(current) { editingLessons = false } } }.buttonStyle(PrimaryButton()) }
+            HStack { Button(l.text("Cancel")) { editingLessons = false }.buttonStyle(SecondaryButton()); Button { if var current = trip { current.lessons = lessonDraft; if store.update(current) { editingLessons = false } } } label: { ButtonArtworkLabel(title: l.text("Save"), artwork: "ActionSave") }.buttonStyle(PrimaryButton()) }
         }.padding(20).padding(.bottom, 28).frame(maxWidth: 700) }.modifier(Page())
     }
     private func toggle(_ id: UUID) {

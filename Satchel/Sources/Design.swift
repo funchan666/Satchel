@@ -57,7 +57,7 @@ struct PrimaryButton: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label.font(.system(.subheadline, design: .rounded).weight(.semibold)).foregroundColor(.white)
             .multilineTextAlignment(.center).padding(.horizontal, 22).padding(.vertical, 13)
-            .frame(minHeight: 50).modifier(PaperSurface(artwork: "ButtonOcean", radius: 16))
+            .frame(minHeight: 50).modifier(PaperSurface(artwork: "ControlOceanV3", radius: 16))
             .opacity(configuration.isPressed ? 0.8 : 1)
             .opacity(isEnabled ? 1 : 0.55)
     }
@@ -68,7 +68,7 @@ struct TabPrimaryButton: ButtonStyle {
         configuration.label.font(.system(.subheadline, design: .rounded).weight(.semibold))
             .foregroundColor(.white).multilineTextAlignment(.center)
             .padding(.horizontal, 20).padding(.vertical, 12).frame(minHeight: 48)
-            .modifier(PaperSurface(artwork: "TabAction", radius: 15))
+            .modifier(PaperSurface(artwork: "ControlOceanV3", radius: 15))
             .opacity(configuration.isPressed ? 0.8 : 1).opacity(isEnabled ? 1 : 0.55)
     }
 }
@@ -78,7 +78,7 @@ struct AddActionLabel: View {
     let title: String
     var body: some View {
         HStack(spacing: 8) {
-            Image("AddMark").resizable().scaledToFit().frame(width: 19, height: 19).accessibilityHidden(true)
+            Image("ActionAdd").resizable().scaledToFit().frame(width: 30, height: 30).accessibilityHidden(true)
             Text(title).multilineTextAlignment(.leading)
         }.accessibilityElement(children: .combine)
     }
@@ -88,9 +88,29 @@ struct SecondaryButton: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label.font(.system(.subheadline, design: .rounded).weight(.semibold)).foregroundColor(Palette.ink)
             .multilineTextAlignment(.center).padding(.horizontal, 17).padding(.vertical, 12)
-            .frame(minHeight: 48).modifier(PaperSurface(artwork: "ButtonPaper", radius: 14))
+            .frame(minHeight: 48).modifier(PaperSurface(artwork: "ControlPaperV3", radius: 14))
             .opacity(configuration.isPressed ? 0.75 : 1)
             .opacity(isEnabled ? 1 : 0.55)
+    }
+}
+struct ButtonArtworkLabel: View {
+    let title: String
+    let artwork: String
+    var body: some View {
+        HStack(spacing: 7) {
+            Image(artwork).resizable().scaledToFit().frame(width: 30, height: 30).accessibilityHidden(true)
+            Text(title).fixedSize(horizontal: false, vertical: true)
+        }.accessibilityElement(children: .combine)
+    }
+}
+struct DangerButton: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label.font(.system(.subheadline, design: .rounded).weight(.semibold))
+            .foregroundColor(Palette.ink).multilineTextAlignment(.center)
+            .padding(.horizontal, 17).padding(.vertical, 12).frame(minHeight: 48)
+            .modifier(PaperSurface(artwork: "ControlClayV3", radius: 14))
+            .opacity(configuration.isPressed ? 0.75 : 1).opacity(isEnabled ? 1 : 0.55)
     }
 }
 struct FieldStyle: ViewModifier {
@@ -134,6 +154,7 @@ struct PhotoView: View {
 }
 struct PhotoSelector: View {
     @EnvironmentObject private var store: TravelStore
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let label: String
     var cameraLabel: String = "Camera"
     var cameraError: String = "Camera access is unavailable. Check your device settings."
@@ -143,9 +164,13 @@ struct PhotoSelector: View {
     @State private var cameraUnavailable = false
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-          HStack(spacing: 10) {
-            PhotosPicker(selection: $selection, matching: .images) { Text(label).frame(maxWidth: .infinity) }.buttonStyle(SecondaryButton())
-            if UIImagePickerController.isSourceTypeAvailable(.camera) { Button { requestCamera() } label: { Text(cameraLabel).frame(maxWidth: .infinity) }.buttonStyle(SecondaryButton()) }
+          if dynamicTypeSize.isAccessibilitySize {
+              photoControlsStack
+          } else {
+              ViewThatFits(in: .horizontal) {
+                  HStack(spacing: 10) { photoButton; cameraButton }.frame(minWidth: 260)
+                  photoControlsStack
+              }
           }
           if cameraUnavailable { Text(cameraError).font(.footnote).foregroundColor(Palette.rust) }
         }.sheet(isPresented: $camera) { CameraCapture(onData: onData) }
@@ -157,6 +182,21 @@ struct PhotoSelector: View {
                     selection = nil
                 }
             }
+    }
+    private var photoControlsStack: some View {
+        VStack(spacing: 10) { photoButton; cameraButton }
+    }
+    private var photoButton: some View {
+        PhotosPicker(selection: $selection, matching: .images) {
+            ButtonArtworkLabel(title: label, artwork: "ActionPhoto").frame(maxWidth: .infinity)
+        }.buttonStyle(SecondaryButton())
+    }
+    @ViewBuilder private var cameraButton: some View {
+        if UIImagePickerController.isSourceTypeAvailable(.camera) {
+            Button { requestCamera() } label: {
+                ButtonArtworkLabel(title: cameraLabel, artwork: "ActionCamera").frame(maxWidth: .infinity)
+            }.buttonStyle(SecondaryButton())
+        }
     }
     private func requestCamera() {
         switch AVCaptureDevice.authorizationStatus(for: .video) {

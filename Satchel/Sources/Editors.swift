@@ -153,10 +153,10 @@ struct ItemEditor: View {
                 }
                 if let image = store.image(photo) { Image(uiImage: image).resizable().scaledToFit().frame(maxHeight: 180).clipShape(RoundedRectangle(cornerRadius: 12)) }
                 if invalid { Text(l.text("Please enter a name and category.")).foregroundColor(Palette.rust).font(.footnote) }
-                HStack { Button(l.text("Cancel")) { if let photo { store.removeUnusedPhotos([photo]) }; dismiss() }.buttonStyle(SecondaryButton()); Button(l.text("Save")) { save() }.buttonStyle(PrimaryButton()) }
+                HStack { Button(l.text("Cancel")) { if let photo { store.removeUnusedPhotos([photo]) }; dismiss() }.buttonStyle(SecondaryButton()); Button { save() } label: { ButtonArtworkLabel(title: l.text("Save"), artwork: "ActionSave") }.buttonStyle(PrimaryButton()) }
                 if existing != nil {
-                    if confirmingItemDelete { HStack { Button(l.text("Cancel")) { confirmingItemDelete = false }.buttonStyle(SecondaryButton()); Button(l.text("Delete")) { remove() }.buttonStyle(PrimaryButton()) } }
-                    else { Button(l.text("Delete")) { confirmingItemDelete = true }.buttonStyle(SecondaryButton()) }
+                    if confirmingItemDelete { HStack { Button(l.text("Cancel")) { confirmingItemDelete = false }.buttonStyle(SecondaryButton()); Button { remove() } label: { ButtonArtworkLabel(title: l.text("Delete"), artwork: "ActionDelete") }.buttonStyle(DangerButton()) } }
+                    else { Button { confirmingItemDelete = true } label: { ButtonArtworkLabel(title: l.text("Delete"), artwork: "ActionDelete") }.buttonStyle(DangerButton()) }
                 }
             }.padding(20).padding(.bottom, 28).frame(maxWidth: 700)
         }.modifier(Page()).toolbar(.hidden, for: .navigationBar).onAppear {
@@ -210,12 +210,12 @@ struct EntryEditor: View {
                 PhotoSelector(label: l.text("Add photo"), cameraLabel: l.text("Camera"), cameraError: l.text("Camera access is unavailable. Check your device settings.")) { data in if let name = store.savePhoto(data) { photos.append(name) } }
                 ForEach(photos, id: \.self) { photo in
                     HStack { if let image = store.image(photo) { Image(uiImage: image).resizable().scaledToFill().frame(width: 90, height: 80).clipped().clipShape(RoundedRectangle(cornerRadius: 10)) }
-                        Button(l.text("Delete")) { photos.removeAll { $0 == photo }; store.removeUnusedPhotos([photo]) }.buttonStyle(SecondaryButton()) }
+                        Button { photos.removeAll { $0 == photo }; store.removeUnusedPhotos([photo]) } label: { ButtonArtworkLabel(title: l.text("Delete"), artwork: "ActionDelete") }.buttonStyle(DangerButton()) }
                 }
-                HStack { Button(l.text("Cancel")) { store.removeUnusedPhotos(Set(photos)); dismiss() }.buttonStyle(SecondaryButton()); Button(l.text("Save")) { save() }.buttonStyle(PrimaryButton()).disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && photos.isEmpty) }
+                HStack { Button(l.text("Cancel")) { store.removeUnusedPhotos(Set(photos)); dismiss() }.buttonStyle(SecondaryButton()); Button { save() } label: { ButtonArtworkLabel(title: l.text("Save"), artwork: "ActionSave") }.buttonStyle(PrimaryButton()).disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && photos.isEmpty) }
                 if existing != nil {
-                    if confirmingDelete { HStack { Button(l.text("Cancel")) { confirmingDelete = false }.buttonStyle(SecondaryButton()); Button(l.text("Delete")) { remove() }.buttonStyle(PrimaryButton()) } }
-                    else { Button(l.text("Delete")) { confirmingDelete = true }.buttonStyle(SecondaryButton()) }
+                    if confirmingDelete { HStack { Button(l.text("Cancel")) { confirmingDelete = false }.buttonStyle(SecondaryButton()); Button { remove() } label: { ButtonArtworkLabel(title: l.text("Delete"), artwork: "ActionDelete") }.buttonStyle(DangerButton()) } }
+                    else { Button { confirmingDelete = true } label: { ButtonArtworkLabel(title: l.text("Delete"), artwork: "ActionDelete") }.buttonStyle(DangerButton()) }
                 }
             }.padding(20).padding(.bottom, 28).frame(maxWidth: 700)
         }.modifier(Page()).toolbar(.hidden, for: .navigationBar).onAppear { if let entry = existing { text = entry.text; date = entry.date; dateText = dateTimeFormatter.string(from: entry.date); photos = entry.photos } }
@@ -256,11 +256,11 @@ struct TripEditor: View {
                     Text("YYYY-MM-DD").font(.caption).foregroundColor(Palette.muted)
                 }.padding(16).modifier(SatchelGlass(tint: Palette.cream.opacity(0.25), cornerRadius: 20))
                 if invalid { Text(l.text("Please check the destination and dates.")).foregroundColor(Palette.rust) }
-                HStack { Button(l.text("Cancel")) { dismiss() }.buttonStyle(SecondaryButton()); Button(l.text("Save")) { save() }.buttonStyle(PrimaryButton()) }
+                HStack { Button(l.text("Cancel")) { dismiss() }.buttonStyle(SecondaryButton()); Button { save() } label: { ButtonArtworkLabel(title: l.text("Save"), artwork: "ActionSave") }.buttonStyle(PrimaryButton()) }
                 if deleting {
                     Text(l.text("Delete this trip and its records?"))
-                    HStack { Button(l.text("Cancel")) { deleting = false }.buttonStyle(SecondaryButton()); Button(l.text("Delete")) { delete() }.buttonStyle(PrimaryButton()) }
-                } else { Button(l.text("Delete trip")) { deleting = true }.buttonStyle(SecondaryButton()) }
+                    HStack { Button(l.text("Cancel")) { deleting = false }.buttonStyle(SecondaryButton()); Button { delete() } label: { ButtonArtworkLabel(title: l.text("Delete"), artwork: "ActionDelete") }.buttonStyle(DangerButton()) }
+                } else { Button { deleting = true } label: { ButtonArtworkLabel(title: l.text("Delete trip"), artwork: "ActionDelete") }.buttonStyle(DangerButton()) }
             }.padding(20).padding(.bottom, 28).frame(maxWidth: 700)
         }.modifier(Page()).toolbar(.hidden, for: .navigationBar).onAppear {
             if let trip = store.trips.first(where: { $0.id == tripID }) { destination = trip.destination; start = dateFormatter.string(from: trip.start); end = dateFormatter.string(from: trip.end) }
