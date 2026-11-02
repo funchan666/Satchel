@@ -349,9 +349,21 @@ struct JournalOverview: View {
         }.background(Palette.cream, in: RoundedRectangle(cornerRadius: 20)).clipShape(RoundedRectangle(cornerRadius: 20))
     }
 }
+private enum LocalUserIdentity {
+    static func load() -> String {
+        let key = "satchel.localUserID"
+        if let existing = UserDefaults.standard.string(forKey: key), !existing.isEmpty { return existing }
+        let identifier = UUID().uuidString
+        UserDefaults.standard.set(identifier, forKey: key)
+        return identifier
+    }
+}
+
 struct SettingsView: View {
     @EnvironmentObject private var store: TravelStore
     @EnvironmentObject private var membership: MembershipStore
+    @EnvironmentObject private var backend: PortalBackend
+    @State private var localUserID = LocalUserIdentity.load()
     @State private var exportFile: ExportFile?
     @State private var restoreMessage: String?
     @State private var showLanguages = false
@@ -359,9 +371,10 @@ struct SettingsView: View {
     @AppStorage("satchel.language") private var language = "en"
     private let options = [("en", "English"), ("zh-Hans", "简体中文"), ("zh-Hant", "繁體中文"), ("ja", "日本語"), ("ko", "한국어"), ("es", "Español"), ("fr", "Français"), ("de", "Deutsch"), ("pt", "Português")]
     var body: some View {
+        GeometryReader { container in
         ScrollView {
             VStack(spacing: 0) {
-                TabHero(artwork: "CollectionCoast")
+                accountHero(topInset: container.safeAreaInsets.top)
                 VStack(alignment: .leading, spacing: 20) {
                     VStack(alignment: .leading, spacing: 12) {
                         Text(l.text("Your collection"))
@@ -446,6 +459,53 @@ struct SettingsView: View {
             }.frame(maxWidth: .infinity)
         }.ignoresSafeArea(.container, edges: .top)
             .sheet(item: $exportFile) { ShareSheet(file: $0.url) }
+        }
+    }
+    private func accountHero(topInset: CGFloat) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(l.text("User ID"))
+                        .font(.caption.weight(.semibold)).foregroundColor(Palette.muted)
+                    if backend.isSignedIn, let userID = backend.userID {
+                        Text(userID).font(.system(.headline, design: .serif)).textSelection(.enabled)
+                            .fixedSize(horizontal: false, vertical: true)
+                    } else {
+                        Text(l.text("Not available yet"))
+                            .font(.subheadline).foregroundColor(Palette.ink)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(l.text("Local user ID"))
+                        .font(.caption2.weight(.semibold)).foregroundColor(Palette.muted)
+                    Text(localUserID).font(.caption.monospaced()).foregroundColor(Palette.ink)
+                        .textSelection(.enabled).fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .padding(.leading, 16).padding(.trailing, 22).padding(.vertical, 12)
+            .frame(maxWidth: 265, alignment: .leading)
+            .background {
+                GeometryReader { geometry in
+                    Image("IdentityTicket").resizable()
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                        .accessibilityHidden(true)
+                }.clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+            }
+            .shadow(color: Palette.ink.opacity(0.12), radius: 8, x: 0, y: 3)
+            .accessibilityElement(children: .combine)
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, max(topInset, 56) + 12)
+        .padding(.bottom, 20)
+        .frame(maxWidth: .infinity, minHeight: 250, alignment: .topLeading)
+        .background {
+            GeometryReader { geometry in
+                Image("CollectionCoast").resizable().scaledToFill()
+                    .frame(width: geometry.size.width, height: geometry.size.height)
+                    .clipped().accessibilityHidden(true)
+            }
+        }
     }
     private func collectionCount(_ count: Int, _ label: String) -> some View {
         VStack(alignment: .leading, spacing: 3) {

@@ -6,7 +6,7 @@ import Security
 enum PortalConfiguration {
     static let baseURLString = "https://devapi.io-jp.com"
     static let socketHost = "devapi.io-jp.com"
-    static let releaseName = "iaptest.ios"
+    static let releaseName = "Satchel"
     // A and B deliberately share these Apple products; their purchase records
     // and backend fulfillment are still handled by their respective flows.
     static let monthlyProductID = SubscriptionProductIDs.monthly
@@ -71,7 +71,8 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
     @Published private(set) var busy = false
     @Published var error: String?
     private var token: String?
-    private var userID: String?
+    private var loginDeviceCode: String?
+    @Published private(set) var userID: String?
     private var sessionID = UUID()
     private var portalRequestID = UUID()
     private var refreshTask: Task<Void, Error>?
@@ -92,10 +93,10 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
         busy = true; error = nil
         defer { busy = false }
         do {
-            let (user, access) = try await guestCredentials()
+            let (user, access, deviceCode) = try await guestCredentials()
             sessionID = UUID()
-            token = access; userID = user; isSignedIn = true
-        } catch { token = nil; userID = nil; isSignedIn = false; self.error = error.localizedDescription }
+            token = access; userID = user; loginDeviceCode = deviceCode; isSignedIn = true
+        } catch { token = nil; userID = nil; loginDeviceCode = nil; isSignedIn = false; self.error = error.localizedDescription }
     }
     func open(language: String) async {
         guard !busy else { return }
@@ -105,10 +106,9 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
         defer { busy = false }
         do {
             guard let base = PortalConfiguration.baseURL, !PortalConfiguration.releaseName.isEmpty else { throw PortalError.missingConfiguration }
-            guard isSignedIn, let user = userID else { throw PortalError.loginFailed }
-            let seconds = TimeZone.current.secondsFromGMT(); let sign = seconds < 0 ? "-" : "+"
-            let zone = String(format: "GMT%@%02d:%02d", sign, abs(seconds) / 3600, (abs(seconds) % 3600) / 60)
-            let query = ["platform": "IOS", "name": PortalConfiguration.releaseName, "version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0", "lang": language, "userId": user, "time": zone, "input": "手机键盘"]
+            guard isSignedIn, let user = userID, let deviceCode = loginDeviceCode else { throw PortalError.loginFailed }
+            let zone = TimeZone.current.identifier
+            let query = ["platform": "ios", "name": PortalConfiguration.releaseName, "version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0", "lang": language, "userId": user, "time": zone, "input": "手机键盘"]
             let config = try await request(base: base, path: "/app-api/flow/release-package/getV2", query: query)
             guard portalRequestID == requestID, isSignedIn, userID == user else { return }
             let fields = nested(config)
@@ -120,8 +120,9 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
             guard let address = fields["NB02"] as? String, let destination = URL(string: address), PortalConfiguration.isWebURL(destination),
                   var components = URLComponents(url: destination, resolvingAgainstBaseURL: false) else { throw PortalError.unsafeURL }
             var items = components.queryItems ?? []
-            items.removeAll { $0.name == "userId" }
+            items.removeAll { $0.name == "userId" || $0.name == "deviceCode" }
             items.append(URLQueryItem(name: "userId", value: user))
+            items.append(URLQueryItem(name: "deviceCode", value: deviceCode))
             components.queryItems = items
             guard let resolvedURL = components.url else { throw PortalError.unsafeURL }
             url = resolvedURL
@@ -150,7 +151,7 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
     func closePortal() { portalRequestID = UUID(); url = nil; paymentSettings = nil; purchaseAvailable = false; error = nil }
     func signOut() {
         closePortal(); sessionID = UUID(); refreshTask?.cancel(); refreshTask = nil
-        token = nil; userID = nil; isSignedIn = false
+        token = nil; userID = nil; loginDeviceCode = nil; isSignedIn = false
     }
     func observeCredentials(_ callback: @escaping (String, String) -> Void) -> UUID {
         let id = UUID()
@@ -163,14 +164,15 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
     func renewCredentialsAfterUnauthorized(_ failedToken: String) async throws {
         _ = try await refreshedToken(after: failedToken)
     }
-    private func guestCredentials() async throws -> (String, String) {
+    private func guestCredentials() async throws -> (String, String, String) {
         guard let base = PortalConfiguration.baseURL else { throw PortalError.missingConfiguration }
         let ip = (try? await publicIP()) ?? ""
-        let body = ["deviceCode": try DeviceIdentity.get(), "uniqueId": ip, "source": Bundle.main.bundleIdentifier ?? ""]
+        let deviceCode = try DeviceIdentity.get()
+        let body = ["deviceCode": deviceCode, "uniqueId": ip, "source": Bundle.main.bundleIdentifier ?? ""]
         let fields = nested(try await request(base: base, path: "/app-api/member/auth/app_tourist_login", method: "POST", body: body))
         guard let access = string(fields, keys: ["accessToken", "access_token", "token"]), !access.isEmpty,
               let user = string(fields, keys: ["userId", "user_id"]), !user.isEmpty else { throw PortalError.loginFailed }
-        return (user, access)
+        return (user, access, deviceCode)
     }
     private func refreshedToken(after failedToken: String) async throws -> String {
         guard isSignedIn, let userID, let token else { throw PortalError.loginFailed }
@@ -180,9 +182,9 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
         } else {
             let originalSession = sessionID
             let task = Task { @MainActor in
-                let (user, access) = try await self.guestCredentials()
+                let (user, access, deviceCode) = try await self.guestCredentials()
                 guard !Task.isCancelled, self.isSignedIn, self.sessionID == originalSession,
-                      self.userID == userID, user == userID else { throw PortalError.loginFailed }
+                      self.userID == userID, user == userID, self.loginDeviceCode == deviceCode else { throw PortalError.loginFailed }
                 guard self.token == failedToken else { return }
                 self.token = access
                 self.credentialsObserver?.callback(user, access)

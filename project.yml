@@ -6,7 +6,7 @@ options:
 settings:
   base:
     SWIFT_VERSION: '5.0'
-    PRODUCT_BUNDLE_IDENTIFIER: com.satchel.traveljournal
+    PRODUCT_BUNDLE_IDENTIFIER: im.seex.lobo
     DEVELOPMENT_TEAM: ''
     TARGETED_DEVICE_FAMILY: '1,2'
 packages:
