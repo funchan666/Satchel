@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import StoreKit
 import UIKit
 import WebKit
@@ -14,6 +15,7 @@ private struct PortalOperation: Codable {
     let plan: String?
     var productID: String? = nil
     var status: String
+    var failureReason: String? = nil
     var completed: Bool? = nil
     var accountToken: UUID? = nil
     var orderID: String? = nil
@@ -25,6 +27,7 @@ private struct PortalOperation: Codable {
 }
 
 @MainActor final class PortalSocket {
+    private let paymentLog = Logger(subsystem: Bundle.main.bundleIdentifier ?? "Satchel", category: "PortalPayment")
     private let backend: PortalBackend
     private let ads: RewardedAds
     private weak var webView: WKWebView?
@@ -324,9 +327,10 @@ private struct PortalOperation: Codable {
             return true
         } catch { return false }
     }
-    private func updateOperation(_ id: String, status: String, completed: Bool? = nil) {
+    private func updateOperation(_ id: String, status: String, completed: Bool? = nil, failureReason: String? = nil) {
         guard let index = operations.firstIndex(where: { $0.userID == userID && $0.requestID == id }) else { return }
         operations[index].status = status; operations[index].completed = completed; operations[index].needsSend = true
+        operations[index].failureReason = failureReason
         if !persist() { ledgerAvailable = false }
     }
     private func presentingController() -> UIViewController? {
@@ -351,7 +355,7 @@ private struct PortalOperation: Codable {
         if record.action == "subscription.purchase", record.status == "purchased", let productID = productID(for: record), let transactionID = record.transactionID {
             purchaseData = ["planId": productID, "transactionId": transactionID, "verified": true]
         }
-        _ = await send(requestID: record.requestID, action: record.action, status: record.status, plan: record.plan, completed: record.completed, data: purchaseData)
+        _ = await send(requestID: record.requestID, action: record.action, status: record.status, plan: record.plan, completed: record.completed, data: purchaseData, error: record.failureReason)
     }
     @discardableResult private func send(requestID: String, action: String, status: String, plan: String? = nil, completed: Bool? = nil, data: Any? = nil, error: String? = nil) async -> Bool {
         var result: [String: Any] = ["requestId": requestID, "action": action, "status": status, "version": 1, "platform": "app"]
@@ -370,35 +374,40 @@ private struct PortalOperation: Codable {
     private func purchase(requestID: String, plan: String) async {
         guard !stopped, ledgerAvailable else { return }
         guard backend.purchaseAvailable else {
-            updateOperation(requestID, status: "failed")
-            if let record = operation(requestID) { await send(record: record) }
+            await failPurchase(requestID, reason: "purchase_disabled")
             return
         }
         guard !paymentActive else {
-            updateOperation(requestID, status: "failed")
-            if let record = operation(requestID) { await send(record: record) }
+            await failPurchase(requestID, reason: "purchase_in_progress")
             return
         }
         guard presentingController() != nil else {
-            updateOperation(requestID, status: "failed")
-            if let record = operation(requestID) { await send(record: record) }
+            await failPurchase(requestID, reason: "presentation_unavailable")
             return
         }
         paymentActive = true; defer { paymentActive = false }
         guard let record = operation(requestID), let productID = productID(for: record),
               PortalConfiguration.monthlyProductID != PortalConfiguration.yearlyProductID else {
-            updateOperation(requestID, status: "failed")
-            if let record = operation(requestID) { await send(record: record) }
+            await failPurchase(requestID, reason: "invalid_product_configuration")
             return
         }
         var orderAttempted = false
         do {
-            guard let product = try await Product.products(for: [productID]).first,
-                  let period = product.subscription?.subscriptionPeriod, period.value == 1,
-                  (plan == "monthly" ? period.unit == .month : period.unit == .year),
-                  let index = operations.firstIndex(where: { $0.userID == userID && $0.requestID == requestID }) else {
-                updateOperation(requestID, status: "failed")
-                if let record = operation(requestID) { await send(record: record) }
+            guard let product = try await Product.products(for: [productID]).first else {
+                await failPurchase(requestID, reason: "product_not_found")
+                return
+            }
+            guard let period = product.subscription?.subscriptionPeriod else {
+                await failPurchase(requestID, reason: "product_not_subscription")
+                return
+            }
+            paymentLog.info("StoreKit product \(productID, privacy: .public): period \(period.value, privacy: .public) \(String(describing: period.unit), privacy: .public); requested plan \(plan, privacy: .public)")
+            guard period.value == 1, (plan == "monthly" ? period.unit == .month : period.unit == .year) else {
+                await failPurchase(requestID, reason: "subscription_period_mismatch")
+                return
+            }
+            guard let index = operations.firstIndex(where: { $0.userID == userID && $0.requestID == requestID }) else {
+                paymentLog.error("Purchase operation missing before order creation")
                 return
             }
             guard !stopped else { return }
@@ -428,9 +437,19 @@ private struct PortalOperation: Codable {
         } catch {
             // A transport or StoreKit error may occur after the operation started; keep it pending for reconciliation.
             guard !stopped else { return }
-            if !orderAttempted { updateOperation(requestID, status: "failed") }
+            if !orderAttempted {
+                await failPurchase(requestID, reason: "product_query_failed")
+                return
+            }
+            paymentLog.error("Order or StoreKit operation needs reconciliation")
             if let record = operation(requestID) { await send(record: record) }
         }
+    }
+
+    private func failPurchase(_ requestID: String, reason: String) async {
+        paymentLog.error("Purchase failed before order creation: \(reason, privacy: .public)")
+        updateOperation(requestID, status: "failed", failureReason: reason)
+        if let record = operation(requestID) { await send(record: record) }
     }
 
     private func handleTransaction(_ result: VerificationResult<Transaction>) async {
