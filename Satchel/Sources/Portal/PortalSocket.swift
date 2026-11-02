@@ -189,10 +189,7 @@ private struct PortalOperation: Codable {
                         return
                     }
                     let products = try await Product.products(for: ids)
-                    let valid = products.filter { product in
-                        guard let period = product.subscription?.subscriptionPeriod, period.value == 1 else { return false }
-                        return product.id == PortalConfiguration.monthlyProductID ? period.unit == .month : product.id == PortalConfiguration.yearlyProductID && period.unit == .year
-                    }
+                    let valid = products.filter { ids.contains($0.id) }
                     guard !valid.isEmpty else {
                         await self.send(requestID: requestID, action: action, status: "failed", error: "products_not_found")
                         return
@@ -397,15 +394,8 @@ private struct PortalOperation: Codable {
                 await failPurchase(requestID, reason: "product_not_found")
                 return
             }
-            guard let period = product.subscription?.subscriptionPeriod else {
-                await failPurchase(requestID, reason: "product_not_subscription")
-                return
-            }
-            paymentLog.info("StoreKit product \(productID, privacy: .public): period \(period.value, privacy: .public) \(String(describing: period.unit), privacy: .public); requested plan \(plan, privacy: .public)")
-            guard period.value == 1, (plan == "monthly" ? period.unit == .month : period.unit == .year) else {
-                await failPurchase(requestID, reason: "subscription_period_mismatch")
-                return
-            }
+            let period = product.subscription.map { "\($0.subscriptionPeriod.value) \(String(describing: $0.subscriptionPeriod.unit))" } ?? "none"
+            paymentLog.info("StoreKit product \(productID, privacy: .public): period \(period, privacy: .public); requested plan \(plan, privacy: .public)")
             guard let index = operations.firstIndex(where: { $0.userID == userID && $0.requestID == requestID }) else {
                 paymentLog.error("Purchase operation missing before order creation")
                 return
