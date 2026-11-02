@@ -77,7 +77,6 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
     private var portalRequestID = UUID()
     private var refreshTask: Task<Void, Error>?
     private var credentialsObserver: (id: UUID, callback: (String, String) -> Void)?
-    private(set) var paymentSettings: (sandbox: Bool, sharedKey: String)?
     private(set) var purchaseAvailable = false
     var socketCredentials: (userID: String, token: String)? {
         guard isSignedIn, let userID, let token else { return nil }
@@ -107,22 +106,24 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
         do {
             guard let base = PortalConfiguration.baseURL, !PortalConfiguration.releaseName.isEmpty else { throw PortalError.missingConfiguration }
             guard isSignedIn, let user = userID, let deviceCode = loginDeviceCode else { throw PortalError.loginFailed }
+            guard let appID = Bundle.main.bundleIdentifier, !appID.isEmpty else { throw PortalError.missingConfiguration }
             let zone = TimeZone.current.identifier
             let query = ["platform": "ios", "name": PortalConfiguration.releaseName, "version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0", "lang": language, "userId": user, "time": zone, "input": "手机键盘"]
             let config = try await request(base: base, path: "/app-api/flow/release-package/getV2", query: query)
             guard portalRequestID == requestID, isSignedIn, userID == user else { return }
             let fields = nested(config)
-            if let ios = fields["ios"] as? [String: Any], let sandbox = ios["sandBoxTest"] as? Bool,
-               let sharedKey = ios["iosVerifyShareKey"] as? String, !sharedKey.isEmpty {
-                paymentSettings = (sandbox, sharedKey)
-            } else { paymentSettings = nil }
-            purchaseAvailable = (fields["NB01"] as? Bool) == false && paymentSettings != nil
+            if let disabled = fields["NB01"] as? Bool {
+                purchaseAvailable = !disabled
+            } else {
+                // A missing/null switch permits purchases; an unrecognized value does not.
+                purchaseAvailable = fields["NB01"] == nil || fields["NB01"] is NSNull
+            }
             guard let address = fields["NB02"] as? String, let destination = URL(string: address), PortalConfiguration.isWebURL(destination),
                   var components = URLComponents(url: destination, resolvingAgainstBaseURL: false) else { throw PortalError.unsafeURL }
             var items = components.queryItems ?? []
-            items.removeAll { $0.name == "userId" || $0.name == "deviceCode" }
-            items.append(URLQueryItem(name: "userId", value: user))
+            items.removeAll { $0.name == "deviceCode" || $0.name == "appId" }
             items.append(URLQueryItem(name: "deviceCode", value: deviceCode))
+            items.append(URLQueryItem(name: "appId", value: appID))
             components.queryItems = items
             guard let resolvedURL = components.url else { throw PortalError.unsafeURL }
             url = resolvedURL
@@ -143,12 +144,12 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
         throw PortalError.invalidResponse
     }
     func confirmPurchase(order: String, transactionID: String, receipt: String) async throws {
-        guard let base = PortalConfiguration.baseURL, let token, isSignedIn, let settings = paymentSettings else { throw PortalError.missingConfiguration }
+        guard let base = PortalConfiguration.baseURL, let token, isSignedIn else { throw PortalError.loginFailed }
         let body: [String: Any] = ["verificationData": receipt, "purchaseID": order, "status": "purchased",
-            "sandBoxTest": settings.sandbox, "transactionId": transactionID, "iosVerifyShareKey": settings.sharedKey]
+            "transactionId": transactionID]
         _ = try await request(base: base, path: "/app-api/flow/rights-order/buySuccess", method: "POST", body: body, bearer: token)
     }
-    func closePortal() { portalRequestID = UUID(); url = nil; paymentSettings = nil; purchaseAvailable = false; error = nil }
+    func closePortal() { portalRequestID = UUID(); url = nil; purchaseAvailable = false; error = nil }
     func signOut() {
         closePortal(); sessionID = UUID(); refreshTask?.cancel(); refreshTask = nil
         token = nil; userID = nil; loginDeviceCode = nil; isSignedIn = false

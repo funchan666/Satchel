@@ -379,7 +379,7 @@ private struct PortalOperation: Codable {
             if let record = operation(requestID) { await send(record: record) }
             return
         }
-        guard backend.paymentSettings != nil, presentingController() != nil else {
+        guard presentingController() != nil else {
             updateOperation(requestID, status: "failed")
             if let record = operation(requestID) { await send(record: record) }
             return
@@ -458,7 +458,6 @@ private struct PortalOperation: Codable {
             if let record = operation(requestID) { await send(record: record) }
             return
         }
-        guard backend.paymentSettings != nil else { return }
         // The provider confirmed that repeated verification cannot issue the same entitlement twice.
         for attempt in 0..<3 {
             guard !stopped, !Task.isCancelled else { return }
