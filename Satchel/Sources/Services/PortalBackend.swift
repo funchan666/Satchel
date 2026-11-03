@@ -66,6 +66,7 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
 }
 
 @MainActor final class PortalBackend: ObservableObject {
+    @Published var purchaseActivity: PurchaseActivity?
     @Published private(set) var url: URL?
     @Published private(set) var isSignedIn = false
     @Published private(set) var busy = false

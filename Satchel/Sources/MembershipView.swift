@@ -36,6 +36,12 @@ struct MembershipView: View {
             }.padding(.horizontal, 20).padding(.top, 12).padding(.bottom, 32).frame(maxWidth: 700)
         }.modifier(Page()).toolbar(.hidden, for: .navigationBar)
             .task { await membership.loadProducts() }
+            .overlay(alignment: .top) {
+                if let activity = membership.purchaseActivity {
+                    PurchaseWaitView(activity: activity, dark: false, l: l)
+                        .padding(.horizontal, 20).padding(.top, 12)
+                }
+            }
     }
 
     private var membershipCard: some View {
@@ -113,5 +119,40 @@ struct MembershipView: View {
             }
         }.frame(maxWidth: .infinity, alignment: .leading).padding(18)
             .modifier(SatchelGlass(tint: Palette.cream.opacity(0.38), cornerRadius: 20))
+    }
+}
+
+struct PurchaseWaitView: View {
+    let activity: PurchaseActivity
+    let dark: Bool
+    let l: L10n
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var pulsing = false
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(dark ? "PortalPaymentMark" : "MembershipArt")
+                .resizable().scaledToFit()
+                .frame(width: dark ? 76 : 48, height: 48)
+                .opacity(pulsing && !reduceMotion ? 0.55 : 1)
+                .accessibilityHidden(true)
+            Text(l.text(activity.message))
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(dark ? .white : Palette.ink)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.horizontal, 16).padding(.vertical, 12)
+        .frame(maxWidth: 360)
+        .background(dark ? Color(red: 0.12, green: 0.075, blue: 0.08) : Palette.cream,
+                    in: RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(dark ? 0.35 : 0.12), radius: 12, y: 5)
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.updatesFrequently)
+        .allowsHitTesting(false)
+        .onAppear {
+            guard !reduceMotion else { return }
+            withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) { pulsing = true }
+        }
     }
 }

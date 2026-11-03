@@ -7,6 +7,18 @@ enum SubscriptionProductIDs {
     static let yearly = "conis_4.99"
 }
 
+enum PurchaseActivity {
+    case preparing, awaitingApple, verifying
+
+    var message: String {
+        switch self {
+        case .preparing: return "Preparing your purchase…"
+        case .awaitingApple: return "Waiting for Apple…"
+        case .verifying: return "Confirming your purchase…"
+        }
+    }
+}
+
 @MainActor final class MembershipStore: ObservableObject {
     static let monthlyID = SubscriptionProductIDs.monthly
     static let yearlyID = SubscriptionProductIDs.yearly
@@ -18,6 +30,7 @@ enum SubscriptionProductIDs {
     @Published private(set) var isMember = false
     @Published private(set) var entitlementsReady = false
     @Published private(set) var loading = false
+    @Published private(set) var purchaseActivity: PurchaseActivity?
     @Published var message: String?
     private var updatesTask: Task<Void, Never>?
     private let tokenFile: URL?
@@ -76,7 +89,8 @@ enum SubscriptionProductIDs {
     }
     func purchase(_ product: Product) async {
         guard productIDs.contains(product.id), !loading else { return }
-        loading = true; defer { loading = false }
+        loading = true; purchaseActivity = .preparing
+        defer { loading = false; purchaseActivity = nil }
         // Save the source before starting StoreKit so a relaunch cannot mistake
         // an unfinished B-side purchase for an A-side purchase.
         let accountToken = UUID()
@@ -85,8 +99,10 @@ enum SubscriptionProductIDs {
             return
         }
         do {
+            purchaseActivity = .awaitingApple
             switch try await product.purchase(options: [.appAccountToken(accountToken)]) {
             case .success(let result):
+                purchaseActivity = .verifying
                 if case .verified(let transaction) = result, productIDs.contains(transaction.productID), transaction.appAccountToken == accountToken {
                     if transaction.revocationDate == nil && (transaction.expirationDate.map { $0 > Date() } ?? false) { isMember = true; entitlementsReady = true }
                     await transaction.finish(); await refreshEntitlements()

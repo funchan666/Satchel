@@ -35,6 +35,14 @@ import OSLog
                 if showingStartup {
                     StartupView(l: L10n(code: language)).ignoresSafeArea(.container)
                 }
+                if !showingStartup, backend.url != nil, let activity = backend.purchaseActivity {
+                    VStack {
+                        PurchaseWaitView(activity: activity, dark: true, l: L10n(code: language))
+                        Spacer(minLength: 0)
+                    }
+                    .padding(.horizontal, 20).padding(.top, 12)
+                    .allowsHitTesting(false)
+                }
             }
             .background(AdPresentationAnchor { controller in
                 adController = controller

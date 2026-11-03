@@ -49,6 +49,8 @@ private struct PortalOperation: Codable {
     private var processing: Set<String> = []
     private var processingTransactions: Set<UInt64> = []
     private var paymentActive = false
+    private var purchaseStage: PurchaseActivity?
+    private var verifyingRequests: Set<String> = []
     private var stopped = false
     private let ledgerURL: URL
 
@@ -91,6 +93,7 @@ private struct PortalOperation: Codable {
 
     func stop() {
         stopped = true
+        backend.purchaseActivity = nil
         if let credentialsObserverID { backend.removeCredentialsObserver(credentialsObserverID); self.credentialsObserverID = nil }
         loop?.cancel(); loop = nil; updates?.cancel(); updates = nil
         socket?.cancel(with: .goingAway, reason: nil); socket = nil
@@ -389,7 +392,10 @@ private struct PortalOperation: Codable {
             await failPurchase(requestID, reason: "presentation_unavailable")
             return
         }
-        paymentActive = true; defer { paymentActive = false }
+        paymentActive = true
+        purchaseStage = .preparing
+        updatePurchaseActivity()
+        defer { paymentActive = false; purchaseStage = nil; updatePurchaseActivity() }
         guard let record = operation(requestID), let productID = productID(for: record),
               PortalConfiguration.monthlyProductID != PortalConfiguration.yearlyProductID else {
             await failPurchase(requestID, reason: "invalid_product_configuration")
@@ -418,6 +424,8 @@ private struct PortalOperation: Codable {
             guard let orderIndex = operations.firstIndex(where: { $0.userID == userID && $0.requestID == requestID }) else { return }
             operations[orderIndex].orderID = order
             guard persist() else { ledgerAvailable = false; return }
+            purchaseStage = .awaitingApple
+            updatePurchaseActivity()
             let purchaseResult = try await product.purchase(options: [.appAccountToken(accountToken)])
             guard !stopped else { return }
             switch purchaseResult {
@@ -449,6 +457,11 @@ private struct PortalOperation: Codable {
         if let record = operation(requestID) { await send(record: record) }
     }
 
+    private func updatePurchaseActivity() {
+        guard !stopped else { return }
+        backend.purchaseActivity = verifyingRequests.isEmpty ? purchaseStage : .verifying
+    }
+
     private func handleTransaction(_ result: VerificationResult<Transaction>) async {
         guard !stopped, ledgerAvailable, let credentials = backend.socketCredentials, credentials.userID == userID, credentials.token == token,
               case .verified(let transaction) = result, let accountToken = transaction.appAccountToken,
@@ -466,7 +479,13 @@ private struct PortalOperation: Codable {
         }
         if let known = operations[index].transactionID, known != String(transaction.id) { return }
         processingTransactions.insert(transaction.id)
-        defer { processingTransactions.remove(transaction.id) }
+        verifyingRequests.insert(requestID)
+        updatePurchaseActivity()
+        defer {
+            processingTransactions.remove(transaction.id)
+            verifyingRequests.remove(requestID)
+            updatePurchaseActivity()
+        }
         operations[index].transactionID = String(transaction.id)
         guard persist() else { ledgerAvailable = false; return }
         guard let receiptURL = Bundle.main.appStoreReceiptURL,
