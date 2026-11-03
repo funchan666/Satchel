@@ -8,6 +8,11 @@ private final class PortalSocketDelegate: NSObject, URLSessionTaskDelegate {
     func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) { completionHandler(nil) }
 }
 
+private func portalPayPlan(_ params: [String: Any]) -> String? {
+    if params.isEmpty { return "monthly" }
+    return params["plan"] as? String
+}
+
 private struct PortalOperation: Codable {
     let userID: String
     let requestID: String
@@ -147,7 +152,7 @@ private struct PortalOperation: Codable {
             acknowledge(data)
             return
         }
-        guard ["PAYMENT", "AD_REQUEST", "REQUEST"].contains(outerType) else { return }
+        guard ["PAYMENT", "PAYMENT_REQUEST", "AD_REQUEST", "REQUEST"].contains(outerType) else { return }
         if data["type"] as? String == "ACK", matchesUser(data["userId"]),
            let acknowledgment = data["data"] as? [String: Any] {
             acknowledge(acknowledgment)
@@ -169,7 +174,8 @@ private struct PortalOperation: Codable {
             case PortalConfiguration.yearlyProductID: plan = "yearly"
             default: plan = nil
             }
-        } else { plan = params["plan"] as? String }
+        } else if action == "pay" { plan = portalPayPlan(params) }
+        else { plan = params["plan"] as? String }
         guard ["pay", "ad.rewarded", "ad.interstitial", "subscription.getStatus", "subscription.getProducts", "subscription.purchase", "subscription.restore"].contains(action) else { return }
         if action == "subscription.getStatus" {
             Task { [weak self] in
@@ -264,7 +270,8 @@ private struct PortalOperation: Codable {
                 let result = action == "ad.rewarded" ? await self.ads.show(from: self.presentingController()) : await self.ads.showInterstitial(from: self.presentingController())
                 guard !self.stopped else { return }
                 let status = ["rewarded", "dismissed"].contains(result) ? result : "failed"
-                self.updateOperation(requestID, status: status, completed: action == "ad.rewarded" ? result == "rewarded" : nil)
+                self.updateOperation(requestID, status: status, completed: action == "ad.rewarded" ? result == "rewarded" : nil,
+                                     failureReason: status == "failed" ? result : nil)
                 if let updated = self.operation(requestID) { await self.send(record: updated) }
             }
         }
