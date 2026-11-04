@@ -51,6 +51,6 @@
     </scenes>
     <resources>
         <image name="LaunchIcon" width="1024" height="1024"/>
-        <image name="LaunchStitch" width="1774" height="887"/>
+        <image name="LaunchStitch" width="512" height="256"/>
     </resources>
 </document>
