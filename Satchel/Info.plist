@@ -11,7 +11,7 @@
 			<string>satchel</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>im.seex.lobo</string>
+				<string>satchel</string>
 			</array>
 		</dict>
 	</array>

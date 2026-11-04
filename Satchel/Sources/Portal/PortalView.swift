@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 import WebKit
+import OSLog
 
 struct PortalWebView: UIViewRepresentable {
     let url: URL
@@ -35,12 +36,17 @@ struct PortalWebView: UIViewRepresentable {
         var onInitialLoadFinished: (URL) -> Void
         private var initialLoadFinished = false
         private var initialLoadDeadline: Task<Void, Never>?
+        private var initialLoadStarted: Date?
+        private let startupLog = Logger(subsystem: Bundle.main.bundleIdentifier ?? "Satchel", category: "PortalStartup")
         init(backend: PortalBackend, ads: RewardedAds, initialURL: URL, onInitialLoadFinished: @escaping (URL) -> Void) {
             self.backend = backend; self.ads = ads; self.initialURL = initialURL; self.onInitialLoadFinished = onInitialLoadFinished
         }
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             guard !initialLoadFinished else { return }
             initialLoadFinished = true
+            if let initialLoadStarted {
+                startupLog.info("Initial web navigation finished; seconds=\(Date().timeIntervalSince(initialLoadStarted), privacy: .public)")
+            }
             cancelInitialLoadDeadline()
             onInitialLoadFinished(initialURL)
         }
@@ -66,6 +72,7 @@ struct PortalWebView: UIViewRepresentable {
             backend.closePortal()
         }
         func startInitialLoadDeadline() {
+            initialLoadStarted = Date()
             initialLoadDeadline = Task { @MainActor [weak self] in
                 var activeSeconds = 0
                 while activeSeconds < 30 {

@@ -14,6 +14,7 @@ import OSLog
     @State private var portalReady = false
     @State private var startupAdStarted = false
     @State private var startupAdResolved = false
+    @State private var startupAdFinishedAt: Date?
     @State private var adController: UIViewController?
     private let startupLog = Logger(subsystem: Bundle.main.bundleIdentifier ?? "Satchel", category: "AppOpenAd")
 
@@ -89,6 +90,7 @@ import OSLog
                 startupLog.info("Startup ad timed out before presentation; presenter ready: \(adController != nil)")
                 ads.cancelPendingOpen()
                 startupAdResolved = true
+                startupAdFinishedAt = Date()
                 finishStartupIfReady()
             }
         }
@@ -103,12 +105,18 @@ import OSLog
             }
             startupLog.info("Startup ad finished: \(result, privacy: .public)")
             startupAdResolved = true
+            startupAdFinishedAt = Date()
             finishStartupIfReady()
         }
     }
 
     private func finishStartupIfReady() {
-        if routeResolved && startupAdResolved && (backend.url == nil || portalReady) { showingStartup = false }
+        if showingStartup && routeResolved && startupAdResolved && (backend.url == nil || portalReady) {
+            if let startupAdFinishedAt {
+                startupLog.info("Startup ready after ad; seconds=\(Date().timeIntervalSince(startupAdFinishedAt), privacy: .public)")
+            }
+            showingStartup = false
+        }
     }
 }
 

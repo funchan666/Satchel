@@ -1,5 +1,6 @@
 import Foundation
 import Network
+import OSLog
 import Security
 
 /// Development endpoints supplied by the provider; production values must be configured separately.
@@ -66,6 +67,7 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
 }
 
 @MainActor final class PortalBackend: ObservableObject {
+    private let startupLog = Logger(subsystem: Bundle.main.bundleIdentifier ?? "Satchel", category: "PortalStartup")
     @Published var purchaseActivity: PurchaseActivity?
     @Published private(set) var url: URL?
     @Published private(set) var isSignedIn = false
@@ -88,10 +90,20 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
         config.timeoutIntervalForRequest = 15
         return URLSession(configuration: config, delegate: NoRedirects(), delegateQueue: nil)
     }()
+    private let ipSession: URLSession = {
+        let config = URLSessionConfiguration.ephemeral
+        config.timeoutIntervalForRequest = 5
+        config.timeoutIntervalForResource = 5
+        return URLSession(configuration: config, delegate: NoRedirects(), delegateQueue: nil)
+    }()
     func signIn() async {
         guard !busy else { return }
+        let started = Date()
         busy = true; error = nil
-        defer { busy = false }
+        defer {
+            busy = false
+            startupLog.info("Guest login finished; success=\(self.isSignedIn), seconds=\(Date().timeIntervalSince(started), privacy: .public)")
+        }
         do {
             let (user, access, deviceCode) = try await guestCredentials()
             sessionID = UUID()
@@ -100,10 +112,14 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
     }
     func open(language: String) async {
         guard !busy else { return }
+        let started = Date()
         let requestID = UUID()
         portalRequestID = requestID
         busy = true; error = nil
-        defer { busy = false }
+        defer {
+            busy = false
+            startupLog.info("Portal configuration finished; addressAvailable=\(self.url != nil), seconds=\(Date().timeIntervalSince(started), privacy: .public)")
+        }
         do {
             guard let base = PortalConfiguration.baseURL, !PortalConfiguration.releaseName.isEmpty else { throw PortalError.missingConfiguration }
             guard isSignedIn, let user = userID, let deviceCode = loginDeviceCode else { throw PortalError.loginFailed }
@@ -168,7 +184,9 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
     }
     private func guestCredentials() async throws -> (String, String, String) {
         guard let base = PortalConfiguration.baseURL else { throw PortalError.missingConfiguration }
+        let started = Date()
         let ip = (try? await publicIP()) ?? ""
+        startupLog.info("Public IP lookup finished; available=\(!ip.isEmpty), seconds=\(Date().timeIntervalSince(started), privacy: .public)")
         let deviceCode = try DeviceIdentity.get()
         let body = ["deviceCode": deviceCode, "uniqueId": ip, "source": Bundle.main.bundleIdentifier ?? ""]
         let fields = nested(try await request(base: base, path: "/app-api/member/auth/app_tourist_login", method: "POST", body: body))
@@ -199,17 +217,25 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
         return updated
     }
     private func publicIP() async throws -> String {
-        for address in ["https://ipv4.icanhazip.com", "https://api.ipify.org/"] {
-            guard let url = URL(string: address) else { continue }
-            do {
-                let (data, response) = try await session.data(from: url)
-                guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode), data.count < 128,
-                      let raw = String(data: data, encoding: .utf8) else { continue }
-                let value = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-                if IPv4Address(value) != nil { return value }
-            } catch { continue }
+        let session = ipSession
+        let result = await withTaskGroup(of: String?.self, returning: String?.self) { group in
+            for address in ["https://ipv4.icanhazip.com", "https://api.ipify.org/"] {
+                guard let url = URL(string: address) else { continue }
+                group.addTask {
+                    guard let (data, response) = try? await session.data(from: url),
+                          let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode),
+                          data.count < 128, let raw = String(data: data, encoding: .utf8) else { return nil }
+                    let value = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+                    return IPv4Address(value) == nil ? nil : value
+                }
+            }
+            for await value in group {
+                if let value { group.cancelAll(); return value }
+            }
+            return nil
         }
-        throw PortalError.invalidIP
+        guard let result else { throw PortalError.invalidIP }
+        return result
     }
     private func request(base: URL, path: String, method: String = "GET", query: [String: String] = [:], body: [String: Any]? = nil, bearer: String? = nil) async throws -> Any {
         let originalSession = sessionID
