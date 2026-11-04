@@ -1,3 +1,4 @@
 # Xcode export artifacts do not belong in source control.
 *.ipa
 *.xcarchive/
+/Satchel 20??-??-?? ??-??-??/
