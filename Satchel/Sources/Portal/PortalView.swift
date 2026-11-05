@@ -54,7 +54,7 @@ struct PortalWebView: UIViewRepresentable {
                     guard let self, let webView, !self.initialLoadFinished else { return }
                     let script = """
                     (() => {
-                        if (document.readyState === 'loading' || !document.body) return false;
+                        if (!document.body) return false;
                         if (document.body.innerText.trim().length > 0) return true;
                         return Array.from(document.images).some(image => {
                             const rect = image.getBoundingClientRect();
