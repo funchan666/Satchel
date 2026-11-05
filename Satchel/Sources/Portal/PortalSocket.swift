@@ -8,6 +8,29 @@ private final class PortalSocketDelegate: NSObject, URLSessionTaskDelegate {
     func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) { completionHandler(nil) }
 }
 
+@MainActor private final class PortalReceiptRefresh: NSObject, SKRequestDelegate {
+    private var request: SKReceiptRefreshRequest?
+    private var continuation: CheckedContinuation<Bool, Never>?
+
+    func refresh() async -> Bool {
+        await withCheckedContinuation { continuation in
+            self.continuation = continuation
+            let request = SKReceiptRefreshRequest()
+            self.request = request
+            request.delegate = self
+            request.start()
+        }
+    }
+    func requestDidFinish(_ request: SKRequest) { finish(true) }
+    func request(_ request: SKRequest, didFailWithError error: Error) { finish(false) }
+    private func finish(_ success: Bool) {
+        let continuation = self.continuation
+        self.continuation = nil
+        request = nil
+        continuation?.resume(returning: success)
+    }
+}
+
 private func portalPayPlan(_ params: [String: Any]) -> String? {
     if params.isEmpty { return "monthly" }
     return params["plan"] as? String
@@ -44,11 +67,13 @@ private struct PortalOperation: Codable {
     private var socket: URLSessionWebSocketTask?
     private var loop: Task<Void, Never>?
     private var updates: Task<Void, Never>?
+    private var recovery: Task<Void, Never>?
     private var operations: [PortalOperation] = []
     private var ledgerAvailable = false
     private var processing: Set<String> = []
     private var processingTransactions: Set<UInt64> = []
     private var paymentActive = false
+    private var activeAccountToken: UUID?
     private var purchaseStage: PurchaseActivity?
     private var verifyingRequests: Set<String> = []
     private var stopped = false
@@ -89,13 +114,20 @@ private struct PortalOperation: Codable {
             }
         }
         Task { [weak self] in await self?.recoverUnfinished() }
+        recovery = Task { [weak self] in
+            while !Task.isCancelled {
+                do { try await Task.sleep(nanoseconds: 30_000_000_000) } catch { return }
+                guard let self, !self.stopped else { return }
+                await self.recoverUnfinished()
+            }
+        }
     }
 
     func stop() {
         stopped = true
         backend.purchaseActivity = nil
         if let credentialsObserverID { backend.removeCredentialsObserver(credentialsObserverID); self.credentialsObserverID = nil }
-        loop?.cancel(); loop = nil; updates?.cancel(); updates = nil
+        loop?.cancel(); loop = nil; updates?.cancel(); updates = nil; recovery?.cancel(); recovery = nil
         socket?.cancel(with: .goingAway, reason: nil); socket = nil
         session?.invalidateAndCancel(); session = nil
     }
@@ -113,7 +145,7 @@ private struct PortalOperation: Codable {
             connection.maximumMessageSize = 65_536
             socket = connection; connection.resume()
             Task { [weak self] in await self?.recoverUnfinished() }
-            for record in operations where record.userID == userID && record.needsSend == true {
+            for record in operations where record.userID == userID && record.needsSend == true && !(record.status == "pending" && processing.contains(record.requestID)) {
                 await send(record: record)
             }
             do {
@@ -241,6 +273,7 @@ private struct PortalOperation: Codable {
         }
         if let record = operations.first(where: { $0.userID == userID && $0.requestID == requestID }) {
             guard record.action == action, record.plan == plan else { return }
+            if record.status == "pending", processing.contains(requestID) { return }
             Task { await send(record: record) }
             return
         }
@@ -255,7 +288,6 @@ private struct PortalOperation: Codable {
         var record = PortalOperation(userID: userID, requestID: requestID, action: action, plan: plan, status: "pending")
         if let plan, ["pay", "subscription.purchase"].contains(action) { record.productID = PortalConfiguration.productID(for: plan) }
         record.acknowledgmentAmbiguous = false
-        if ["pay", "subscription.purchase"].contains(action) { record.needsSend = true }
         operations.append(record)
         guard persist() else {
             operations.removeLast(); ledgerAvailable = false
@@ -296,6 +328,7 @@ private struct PortalOperation: Codable {
               let action = data["action"] as? String,
               let index = operations.firstIndex(where: { $0.userID == userID && $0.requestID == requestID && $0.action == action }),
               operations[index].needsSend == true else { return }
+        paymentLog.info("H5 result ACK received; action=\(action, privacy: .public), currentStatus=\(self.operations[index].status, privacy: .public)")
         if let received = data["receivedStatus"] as? String {
             guard operations[index].status == received else { return }
         } else {
@@ -348,6 +381,7 @@ private struct PortalOperation: Codable {
     private func send(record: PortalOperation) async {
         guard !stopped, let index = operations.firstIndex(where: { $0.userID == userID && $0.requestID == record.requestID }),
               operations[index].status == record.status else { return }
+        if ["pay", "subscription.purchase"].contains(record.action), record.status == "pending" { return }
         operations[index].needsSend = true
         if operations[index].acknowledgmentAmbiguous == nil {
             // A record created by an older version has no reliable send history.
@@ -365,6 +399,7 @@ private struct PortalOperation: Codable {
         _ = await send(requestID: record.requestID, action: record.action, status: record.status, plan: record.plan, completed: record.completed, data: purchaseData, error: record.failureReason)
     }
     @discardableResult private func send(requestID: String, action: String, status: String, plan: String? = nil, completed: Bool? = nil, data: Any? = nil, error: String? = nil) async -> Bool {
+        if ["pay", "subscription.purchase"].contains(action), status == "pending" { return false }
         var result: [String: Any] = ["requestId": requestID, "action": action, "status": status, "version": 1, "platform": "app"]
         if let plan { result["params"] = ["plan": plan] }
         if let completed { result["completed"] = completed }
@@ -374,8 +409,24 @@ private struct PortalOperation: Codable {
         var envelope = result
         envelope["type"] = "APP_RESULT"
         envelope["userId"] = userID
-        guard let bytes = try? JSONSerialization.data(withJSONObject: envelope), let text = String(data: bytes, encoding: .utf8), let socket else { return false }
-        do { try await socket.send(.string(text)); return true } catch { return false }
+        guard let bytes = try? JSONSerialization.data(withJSONObject: envelope), let text = String(data: bytes, encoding: .utf8) else {
+            paymentLog.error("Result serialization failed; action=\(action, privacy: .public), status=\(status, privacy: .public)")
+            return false
+        }
+        guard let connection = socket else {
+            paymentLog.error("Result waiting for socket; action=\(action, privacy: .public), status=\(status, privacy: .public)")
+            return false
+        }
+        do {
+            try await connection.send(.string(text))
+            paymentLog.info("Result sent to relay; action=\(action, privacy: .public), status=\(status, privacy: .public)")
+            return true
+        } catch {
+            let failure = error as NSError
+            paymentLog.error("Result send failed; action=\(action, privacy: .public), status=\(status, privacy: .public), domain=\(failure.domain, privacy: .public), code=\(failure.code)")
+            if socket === connection { connection.cancel(with: .goingAway, reason: nil) }
+            return false
+        }
     }
 
     private func purchase(requestID: String, plan: String) async {
@@ -395,7 +446,7 @@ private struct PortalOperation: Codable {
         paymentActive = true
         purchaseStage = .preparing
         updatePurchaseActivity()
-        defer { paymentActive = false; purchaseStage = nil; updatePurchaseActivity() }
+        defer { paymentActive = false; activeAccountToken = nil; purchaseStage = nil; updatePurchaseActivity() }
         guard let record = operation(requestID), let productID = productID(for: record),
               PortalConfiguration.monthlyProductID != PortalConfiguration.yearlyProductID else {
             await failPurchase(requestID, reason: "invalid_product_configuration")
@@ -415,25 +466,35 @@ private struct PortalOperation: Codable {
             }
             guard !stopped else { return }
             let accountToken = UUID()
+            activeAccountToken = accountToken
             operations[index].accountToken = accountToken
-            guard persist() else { ledgerAvailable = false; return }
+            guard persist() else { ledgerAvailable = false; paymentLog.error("Could not save B-side purchase record before order creation"); return }
             // The pending record is saved before creating an order, so an uncertain response never starts a second purchase.
             orderAttempted = true
             let order = try await backend.createOrder(productID: product.id, price: NSDecimalNumber(decimal: product.price).stringValue, usdPrice: plan == "monthly" ? "999" : "9999")
             guard !stopped, let credentials = backend.socketCredentials, credentials.userID == userID, credentials.token == token else { return }
             guard let orderIndex = operations.firstIndex(where: { $0.userID == userID && $0.requestID == requestID }) else { return }
             operations[orderIndex].orderID = order
-            guard persist() else { ledgerAvailable = false; return }
+            guard persist() else { ledgerAvailable = false; paymentLog.error("Could not save B-side order before Apple purchase"); return }
             purchaseStage = .awaitingApple
             updatePurchaseActivity()
             let purchaseResult = try await product.purchase(options: [.appAccountToken(accountToken)])
             guard !stopped else { return }
             switch purchaseResult {
             case .success(let result):
-                await handleTransaction(result)
+                paymentLog.info("StoreKit returned a transaction")
+                switch result {
+                case .verified(let transaction) where transaction.appAccountToken == accountToken && transaction.productID == productID:
+                    await handleTransaction(result, refreshMissingReceipt: true)
+                default:
+                    paymentLog.error("StoreKit transaction is unverified or does not match the purchase record")
+                    if let record = operation(requestID) { await send(record: record) }
+                }
             case .pending:
+                paymentLog.info("StoreKit purchase pending")
                 if let record = operation(requestID) { await send(record: record) }
             case .userCancelled:
+                paymentLog.info("StoreKit purchase cancelled")
                 updateOperation(requestID, status: "cancelled")
                 if let record = operation(requestID) { await send(record: record) }
             @unknown default:
@@ -462,19 +523,35 @@ private struct PortalOperation: Codable {
         backend.purchaseActivity = verifyingRequests.isEmpty ? purchaseStage : .verifying
     }
 
-    private func handleTransaction(_ result: VerificationResult<Transaction>) async {
-        guard !stopped, ledgerAvailable, let credentials = backend.socketCredentials, credentials.userID == userID, credentials.token == token,
-              case .verified(let transaction) = result, let accountToken = transaction.appAccountToken,
-              transaction.revocationDate == nil,
-              let index = operations.firstIndex(where: { $0.userID == userID && ["pay", "subscription.purchase"].contains($0.action) && $0.accountToken == accountToken }),
-              let orderID = operations[index].orderID, !orderID.isEmpty,
-              transaction.productID == productID(for: operations[index]),
-              !processingTransactions.contains(transaction.id) else { return }
+    private func handleTransaction(_ result: VerificationResult<Transaction>, refreshMissingReceipt: Bool = false) async {
+        guard !stopped else { return }
+        guard ledgerAvailable, let credentials = backend.socketCredentials, credentials.userID == userID, credentials.token == token else {
+            paymentLog.error("Transaction recovery waiting for local storage or the current session")
+            return
+        }
+        guard case .verified(let transaction) = result else {
+            paymentLog.error("StoreKit transaction could not be verified locally")
+            return
+        }
+        guard let accountToken = transaction.appAccountToken,
+              let index = operations.firstIndex(where: { $0.userID == userID && ["pay", "subscription.purchase"].contains($0.action) && $0.accountToken == accountToken }) else {
+            paymentLog.info("Transaction does not match a B-side purchase record; left unfinished")
+            return
+        }
+        guard transaction.revocationDate == nil, transaction.productID == productID(for: operations[index]) else {
+            paymentLog.error("B-side transaction is revoked or its product does not match the order")
+            return
+        }
+        guard let orderID = operations[index].orderID, !orderID.isEmpty else {
+            paymentLog.error("B-side transaction has no saved backend order; confirmation not sent")
+            return
+        }
+        guard !processingTransactions.contains(transaction.id) else { return }
         let requestID = operations[index].requestID
         if operations[index].status == "purchased" {
             guard operations[index].transactionID == String(transaction.id) else { return }
-            await transaction.finish()
             if let record = operation(requestID) { await send(record: record) }
+            await transaction.finish()
             return
         }
         if let known = operations[index].transactionID, known != String(transaction.id) { return }
@@ -487,9 +564,17 @@ private struct PortalOperation: Codable {
             updatePurchaseActivity()
         }
         operations[index].transactionID = String(transaction.id)
-        guard persist() else { ledgerAvailable = false; return }
-        guard let receiptURL = Bundle.main.appStoreReceiptURL,
-              let receipt = try? Data(contentsOf: receiptURL), !receipt.isEmpty else {
+        guard persist() else { ledgerAvailable = false; paymentLog.error("Could not save B-side transaction; confirmation not sent"); return }
+        let receiptURL = Bundle.main.appStoreReceiptURL
+        var receipt = receiptURL.flatMap { try? Data(contentsOf: $0) }
+        if (receipt?.isEmpty ?? true) && (refreshMissingReceipt || transaction.appAccountToken == activeAccountToken) {
+            paymentLog.info("Requesting missing App Store receipt after purchase")
+            if await PortalReceiptRefresh().refresh(), let refreshedURL = Bundle.main.appStoreReceiptURL {
+                receipt = try? Data(contentsOf: refreshedURL)
+            }
+        }
+        guard let receipt, !receipt.isEmpty else {
+            paymentLog.error("Verified transaction is waiting for an App Store receipt")
             if let record = operation(requestID) { await send(record: record) }
             return
         }
@@ -497,16 +582,27 @@ private struct PortalOperation: Codable {
         for attempt in 0..<3 {
             guard !stopped, !Task.isCancelled else { return }
             do {
+                paymentLog.info("Confirming purchase with backend; attempt=\(attempt + 1)")
                 try await backend.confirmPurchase(order: orderID, transactionID: String(transaction.id), receipt: receipt.base64EncodedString())
+                paymentLog.info("Backend purchase confirmation succeeded")
                 guard !stopped else { return }
                 guard let currentIndex = operations.firstIndex(where: { $0.userID == userID && $0.requestID == requestID }) else { return }
                 operations[currentIndex].status = "purchased"
                 operations[currentIndex].needsSend = true
-                guard persist() else { operations[currentIndex].status = "pending"; ledgerAvailable = false; return }
-                await transaction.finish()
+                guard persist() else { operations[currentIndex].status = "pending"; ledgerAvailable = false; paymentLog.error("Could not save confirmed B-side transaction; result not sent"); return }
                 if let record = operation(requestID) { await send(record: record) }
+                await transaction.finish()
                 return
             } catch {
+                let category: String
+                switch error {
+                case PortalError.unauthorized: category = "unauthorized"
+                case PortalError.rejected(_): category = "backend_rejected"
+                case PortalError.invalidResponse: category = "invalid_response"
+                default: category = "request_error"
+                }
+                let failure = error as NSError
+                paymentLog.error("Backend purchase confirmation failed; attempt=\(attempt + 1), category=\(category, privacy: .public), domain=\(failure.domain, privacy: .public), code=\(failure.code)")
                 guard !stopped else { return }
                 if attempt < 2 {
                     do { try await Task.sleep(nanoseconds: UInt64(attempt + 1) * 1_000_000_000) } catch { return }

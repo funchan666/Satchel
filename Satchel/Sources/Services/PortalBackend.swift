@@ -68,6 +68,7 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
 
 @MainActor final class PortalBackend: ObservableObject {
     private let startupLog = Logger(subsystem: Bundle.main.bundleIdentifier ?? "Satchel", category: "PortalStartup")
+    private let paymentLog = Logger(subsystem: Bundle.main.bundleIdentifier ?? "Satchel", category: "PortalPayment")
     @Published var purchaseActivity: PurchaseActivity?
     @Published private(set) var url: URL?
     @Published private(set) var isSignedIn = false
@@ -258,6 +259,10 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
         if let body { req.httpBody = try JSONSerialization.data(withJSONObject: body); req.setValue("application/json", forHTTPHeaderField: "Content-Type") }
         if let bearer { req.setValue("Bearer \(bearer)", forHTTPHeaderField: "Authorization") }
         let (data, response) = try await session.data(for: req)
+        if path == "/app-api/flow/rights-order/buySuccess", let http = response as? HTTPURLResponse {
+            let code = data.count <= 2_000_000 ? ((try? JSONSerialization.jsonObject(with: data)) as? [String: Any])?["code"] as? Int : nil
+            paymentLog.info("Backend confirmation response; HTTP=\(http.statusCode), businessCode=\(code.map { String($0) } ?? "missing", privacy: .public)")
+        }
         if let http = response as? HTTPURLResponse, http.statusCode == 401 { throw PortalError.unauthorized }
         guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode), data.count <= 2_000_000,
               let result = try JSONSerialization.jsonObject(with: data) as? [String: Any], let code = result["code"] as? Int else { throw PortalError.invalidResponse }
