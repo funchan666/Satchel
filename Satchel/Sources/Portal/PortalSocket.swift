@@ -182,9 +182,14 @@ private struct PortalOperation: Codable {
     private func receive(_ bytes: Data) {
         guard !stopped, bytes.count <= 65_536,
               let envelope = (try? JSONSerialization.jsonObject(with: bytes)) as? [String: Any],
-              matchesUser(envelope["userId"]),
               let outerType = envelope["type"] as? String,
               var data = envelope["data"] as? [String: Any] else { return }
+        guard matchesUser(envelope["userId"]) else {
+            if ["PAYMENT", "PAYMENT_REQUEST"].contains(outerType) {
+                paymentLog.error("Payment socket message ignored: user does not match App session")
+            }
+            return
+        }
         if outerType == "ACK" {
             acknowledge(data)
             return
@@ -203,7 +208,12 @@ private struct PortalOperation: Codable {
         guard let requestID = data["requestId"] as? String, (1...128).contains(requestID.count),
               let action = data["action"] as? String, let version = data["version"] as? Int, version == 1,
               let params = data["params"] as? [String: Any],
-              (data["platform"] as? String) != "app" else { return }
+              (data["platform"] as? String) != "app" else {
+            if ["PAYMENT", "PAYMENT_REQUEST"].contains(outerType) {
+                paymentLog.error("Payment socket message ignored: unsupported or incomplete payload")
+            }
+            return
+        }
         let plan: String?
         if action == "subscription.purchase" {
             switch params["planId"] as? String {
@@ -550,7 +560,10 @@ private struct PortalOperation: Codable {
     private func failPurchase(_ requestID: String, reason: String) async {
         paymentLog.error("Purchase could not start: \(reason, privacy: .public)")
         updateOperation(requestID, status: "failed", failureReason: reason)
-        if let record = operation(requestID) { await send(record: record) }
+        if let record = operation(requestID) {
+            if ledgerAvailable { await send(record: record) }
+            else { await send(requestID: requestID, action: record.action, status: "failed", plan: record.plan, error: reason) }
+        }
     }
 
     private func updatePurchaseActivity() {
