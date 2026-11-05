@@ -514,6 +514,7 @@ private struct PortalOperation: Codable {
             updatePurchaseActivity()
             storeKitStarted = true
             paymentLog.info("B-side StoreKit purchase started")
+            let purchaseStartedAt = Date()
             let purchaseResult = try await product.purchase(options: [.appAccountToken(accountToken)])
             guard !stopped else { return }
             switch purchaseResult {
@@ -524,6 +525,13 @@ private struct PortalOperation: Codable {
                     await handleTransaction(result, refreshMissingReceipt: true)
                 case .verified(let transaction):
                     paymentLog.error("B-side verified transaction did not match purchase: productMatches=\(transaction.productID == productID), accountTokenPresent=\(transaction.appAccountToken != nil), accountTokenMatches=\(transaction.appAccountToken == accountToken)")
+                    let previousRecord = transaction.appAccountToken.flatMap { token in
+                        operations.first { $0.accountToken == token && ["pay", "subscription.purchase"].contains($0.action) }
+                    }
+                    let ownership = previousRecord.map { $0.userID == userID ? "same_user_b" : "other_user_b" } ?? "unknown"
+                    let predatesRequest = transaction.purchaseDate < purchaseStartedAt.addingTimeInterval(-60)
+                    paymentLog.info("Mismatched transaction; knownOwner=\(ownership, privacy: .public), predatesRequest=\(predatesRequest)")
+                    if previousRecord?.userID == userID { await handleTransaction(result) }
                     if let record = operation(requestID) { await send(record: record) }
                 case .unverified(_, let error):
                     paymentLog.error("B-side StoreKit verification failed: reason=\(String(describing: error), privacy: .public)")
