@@ -162,6 +162,8 @@ private struct PortalOperation: Codable {
                     receive(data)
                 }
             } catch {
+                let failure = error as NSError
+                paymentLog.error("WebSocket receive failed; domain=\(failure.domain, privacy: .public), code=\(failure.code)")
                 if (connection.response as? HTTPURLResponse)?.statusCode == 401 {
                     guard !refreshedAfterUnauthorized else { return }
                     refreshedAfterUnauthorized = true
@@ -212,6 +214,10 @@ private struct PortalOperation: Codable {
         } else if action == "pay" { plan = portalPayPlan(params) }
         else { plan = params["plan"] as? String }
         guard ["pay", "ad.rewarded", "ad.interstitial", "subscription.getStatus", "subscription.getProducts", "subscription.purchase", "subscription.restore"].contains(action) else { return }
+        if ["pay", "subscription.purchase"].contains(action) {
+            let logID = UUID(uuidString: requestID)?.uuidString ?? "non_uuid"
+            paymentLog.info("Payment request accepted; requestId=\(logID, privacy: .public), action=\(action, privacy: .public)")
+        }
         if action == "subscription.getStatus" {
             Task { [weak self] in
                 guard let self else { return }
@@ -453,7 +459,9 @@ private struct PortalOperation: Codable {
             return
         }
         var orderAttempted = false
+        var storeKitStarted = false
         do {
+            paymentLog.info("B-side StoreKit product lookup started")
             guard let product = try await Product.products(for: [productID]).first else {
                 await failPurchase(requestID, reason: "product_not_found")
                 return
@@ -468,16 +476,34 @@ private struct PortalOperation: Codable {
             let accountToken = UUID()
             activeAccountToken = accountToken
             operations[index].accountToken = accountToken
-            guard persist() else { ledgerAvailable = false; paymentLog.error("Could not save B-side purchase record before order creation"); return }
+            guard persist() else {
+                ledgerAvailable = false
+                paymentLog.error("Could not save B-side purchase record before order creation")
+                await send(requestID: requestID, action: record.action, status: "failed", plan: plan, error: "storage_unavailable")
+                return
+            }
             // The pending record is saved before creating an order, so an uncertain response never starts a second purchase.
             orderAttempted = true
+            paymentLog.info("B-side order creation started")
             let order = try await backend.createOrder(productID: product.id, price: NSDecimalNumber(decimal: product.price).stringValue, usdPrice: plan == "monthly" ? "999" : "9999")
-            guard !stopped, let credentials = backend.socketCredentials, credentials.userID == userID, credentials.token == token else { return }
+            paymentLog.info("B-side order creation succeeded")
+            guard !stopped else { return }
+            guard let credentials = backend.socketCredentials, credentials.userID == userID, credentials.token == token else {
+                await failPurchase(requestID, reason: "session_unavailable")
+                return
+            }
             guard let orderIndex = operations.firstIndex(where: { $0.userID == userID && $0.requestID == requestID }) else { return }
             operations[orderIndex].orderID = order
-            guard persist() else { ledgerAvailable = false; paymentLog.error("Could not save B-side order before Apple purchase"); return }
+            guard persist() else {
+                ledgerAvailable = false
+                paymentLog.error("Could not save B-side order before Apple purchase")
+                await send(requestID: requestID, action: record.action, status: "failed", plan: plan, error: "storage_unavailable")
+                return
+            }
             purchaseStage = .awaitingApple
             updatePurchaseActivity()
+            storeKitStarted = true
+            paymentLog.info("B-side StoreKit purchase started")
             let purchaseResult = try await product.purchase(options: [.appAccountToken(accountToken)])
             guard !stopped else { return }
             switch purchaseResult {
@@ -504,19 +530,25 @@ private struct PortalOperation: Codable {
                 if let record = operation(requestID) { await send(record: record) }
             }
         } catch {
-            // A transport or StoreKit error may occur after the operation started; keep it pending for reconciliation.
             guard !stopped else { return }
             if !orderAttempted {
                 await failPurchase(requestID, reason: "product_query_failed")
                 return
             }
-            paymentLog.error("Order or StoreKit operation needs reconciliation")
+            let failure = error as NSError
+            paymentLog.error("B-side purchase operation failed; appleStarted=\(storeKitStarted), domain=\(failure.domain, privacy: .public), code=\(failure.code)")
+            if !storeKitStarted {
+                // No Apple purchase was started, even if the order response was lost.
+                await failPurchase(requestID, reason: "order_creation_failed")
+                return
+            }
+            // A StoreKit error may leave the outcome uncertain; retain it for reconciliation.
             if let record = operation(requestID) { await send(record: record) }
         }
     }
 
     private func failPurchase(_ requestID: String, reason: String) async {
-        paymentLog.error("Purchase failed before order creation: \(reason, privacy: .public)")
+        paymentLog.error("Purchase could not start: \(reason, privacy: .public)")
         updateOperation(requestID, status: "failed", failureReason: reason)
         if let record = operation(requestID) { await send(record: record) }
     }
