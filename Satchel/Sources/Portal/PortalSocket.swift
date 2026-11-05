@@ -486,8 +486,11 @@ private struct PortalOperation: Codable {
                 switch result {
                 case .verified(let transaction) where transaction.appAccountToken == accountToken && transaction.productID == productID:
                     await handleTransaction(result, refreshMissingReceipt: true)
-                default:
-                    paymentLog.error("StoreKit transaction is unverified or does not match the purchase record")
+                case .verified(let transaction):
+                    paymentLog.error("B-side verified transaction did not match purchase: productMatches=\(transaction.productID == productID), accountTokenPresent=\(transaction.appAccountToken != nil), accountTokenMatches=\(transaction.appAccountToken == accountToken)")
+                    if let record = operation(requestID) { await send(record: record) }
+                case .unverified(_, let error):
+                    paymentLog.error("B-side StoreKit verification failed: reason=\(String(describing: error), privacy: .public)")
                     if let record = operation(requestID) { await send(record: record) }
                 }
             case .pending:
@@ -530,7 +533,9 @@ private struct PortalOperation: Codable {
             return
         }
         guard case .verified(let transaction) = result else {
-            paymentLog.error("StoreKit transaction could not be verified locally")
+            if case .unverified(_, let error) = result {
+                paymentLog.error("B-side transaction recovery failed local verification: reason=\(String(describing: error), privacy: .public)")
+            }
             return
         }
         guard let accountToken = transaction.appAccountToken,

@@ -89,7 +89,7 @@ enum PurchaseActivity {
     }
     func purchase(_ product: Product) async {
         guard productIDs.contains(product.id), !loading else { return }
-        loading = true; purchaseActivity = .preparing
+        loading = true; message = nil; purchaseActivity = .preparing
         defer { loading = false; purchaseActivity = nil }
         // Save the source before starting StoreKit so a relaunch cannot mistake
         // an unfinished B-side purchase for an A-side purchase.
@@ -100,19 +100,37 @@ enum PurchaseActivity {
         }
         do {
             purchaseActivity = .awaitingApple
+            productLog.info("A-side StoreKit purchase started")
             switch try await product.purchase(options: [.appAccountToken(accountToken)]) {
             case .success(let result):
+                productLog.info("A-side StoreKit returned a transaction")
                 purchaseActivity = .verifying
-                if case .verified(let transaction) = result, productIDs.contains(transaction.productID), transaction.appAccountToken == accountToken {
+                switch result {
+                case .verified(let transaction):
+                    guard productIDs.contains(transaction.productID), transaction.appAccountToken == accountToken else {
+                        productLog.error("A-side verified transaction did not match purchase: productMatches=\(self.productIDs.contains(transaction.productID)), accountTokenPresent=\(transaction.appAccountToken != nil), accountTokenMatches=\(transaction.appAccountToken == accountToken)")
+                        message = "The purchase could not be verified."
+                        break
+                    }
                     if transaction.revocationDate == nil && (transaction.expirationDate.map { $0 > Date() } ?? false) { isMember = true; entitlementsReady = true }
                     await transaction.finish(); await refreshEntitlements()
                     message = isMember ? "Your membership is active." : "Your purchase was received. Check your membership status again shortly."
-                } else { message = "The purchase could not be verified." }
-            case .pending: message = "Your purchase is pending approval."
-            case .userCancelled: break
+                case .unverified(_, let error):
+                    productLog.error("A-side StoreKit verification failed: reason=\(String(describing: error), privacy: .public)")
+                    message = "The purchase could not be verified."
+                }
+            case .pending:
+                productLog.info("A-side StoreKit purchase pending")
+                message = "Your purchase is pending approval."
+            case .userCancelled:
+                productLog.info("A-side StoreKit purchase cancelled")
             @unknown default: message = "The purchase could not be completed."
             }
-        } catch { message = "The purchase could not be completed. Please try again." }
+        } catch {
+            let failure = error as NSError
+            productLog.error("A-side StoreKit purchase failed: domain=\(failure.domain, privacy: .public), code=\(failure.code)")
+            message = "The purchase could not be completed. Please try again."
+        }
     }
     func restore() async {
         guard !loading else { return }; loading = true; defer { loading = false }
