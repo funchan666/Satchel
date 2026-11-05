@@ -2,3 +2,8 @@
 *.ipa
 *.xcarchive/
 /Satchel 20??-??-?? ??-??-??/
+
+# Per-user Xcode state and macOS Finder metadata.
+.DS_Store
+**/xcuserdata/
+*.xcuserstate
