@@ -3,8 +3,8 @@ import StoreKit
 import OSLog
 
 enum SubscriptionProductIDs {
-    static let monthly = "coins_1.99"
-    static let yearly = "conis_4.99"
+    static let monthly = "com.satchel.traveljournal.monthly"
+    static let yearly = "com.satchel.traveljournal.yearly"
 }
 
 enum PurchaseActivity {
@@ -25,7 +25,8 @@ enum PurchaseActivity {
     private let productIDs = [monthlyID, yearlyID]
     private let productLog = Logger(subsystem: Bundle.main.bundleIdentifier ?? "Satchel", category: "MembershipProducts")
     private static let legacyIDs: Set<String> = ["clipo.plus.monthly", "clipo.plus.yearly", "satchel.plus.monthly", "satchel.plus.yearly"]
-    static let allEntitlementIDs: Set<String> = legacyIDs.union([monthlyID, yearlyID])
+    private static let previousSharedIDs: Set<String> = ["coins_1.99", "conis_4.99"]
+    static let allEntitlementIDs: Set<String> = legacyIDs.union(previousSharedIDs).union([monthlyID, yearlyID])
     @Published private(set) var products: [Product] = []
     @Published private(set) var isMember = false
     @Published private(set) var entitlementsReady = false

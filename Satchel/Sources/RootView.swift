@@ -349,21 +349,10 @@ struct JournalOverview: View {
         }.background(Palette.cream, in: RoundedRectangle(cornerRadius: 20)).clipShape(RoundedRectangle(cornerRadius: 20))
     }
 }
-private enum LocalUserIdentity {
-    static func load() -> String {
-        let key = "satchel.localUserID"
-        if let existing = UserDefaults.standard.string(forKey: key), !existing.isEmpty { return existing }
-        let identifier = UUID().uuidString
-        UserDefaults.standard.set(identifier, forKey: key)
-        return identifier
-    }
-}
-
 struct SettingsView: View {
     @EnvironmentObject private var store: TravelStore
     @EnvironmentObject private var membership: MembershipStore
     @EnvironmentObject private var backend: PortalBackend
-    @State private var localUserID = LocalUserIdentity.load()
     @State private var exportFile: ExportFile?
     @State private var restoreMessage: String?
     @State private var showLanguages = false
@@ -463,28 +452,22 @@ struct SettingsView: View {
     }
     private func accountHero(topInset: CGFloat) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            VStack(alignment: .leading, spacing: 10) {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(l.text("User ID"))
-                        .font(.caption.weight(.semibold)).foregroundColor(Palette.muted)
-                    if backend.isSignedIn, let userID = backend.userID {
-                        Text(userID).font(.system(.headline, design: .serif)).textSelection(.enabled)
-                            .fixedSize(horizontal: false, vertical: true)
-                    } else {
-                        Text(l.text("Not available yet"))
-                            .font(.subheadline).foregroundColor(Palette.ink)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(l.text("Local user ID"))
-                        .font(.caption2.weight(.semibold)).foregroundColor(Palette.muted)
-                    Text(localUserID).font(.caption.monospaced()).foregroundColor(Palette.ink)
-                        .textSelection(.enabled).fixedSize(horizontal: false, vertical: true)
+            VStack(alignment: .leading, spacing: 5) {
+                Text(l.text("User ID"))
+                    .font(.caption.weight(.semibold)).foregroundColor(Palette.muted)
+                if backend.isSignedIn, let userID = backend.userID, !userID.isEmpty {
+                    Text(userID)
+                        .font(.system(.title3, design: .serif).weight(.semibold))
+                        .foregroundColor(Palette.ink).textSelection(.enabled)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    Text(l.text("Not available yet"))
+                        .font(.subheadline).foregroundColor(Palette.ink)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
-            .padding(.leading, 16).padding(.trailing, 22).padding(.vertical, 12)
-            .frame(maxWidth: 265, alignment: .leading)
+            .padding(.leading, 18).padding(.trailing, 36).padding(.vertical, 16)
+            .frame(minWidth: 170, maxWidth: 245, minHeight: 72, alignment: .leading)
             .background {
                 GeometryReader { geometry in
                     Image("IdentityTicket").resizable()

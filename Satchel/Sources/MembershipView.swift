@@ -97,13 +97,24 @@ struct MembershipView: View {
                 Image(monthly ? "NavTrips" : "SeaJournal").resizable().scaledToFit()
                     .frame(width: 48, height: 48).accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 5) {
-                    if let product, let period = periodDescription(product) {
-                        Text(period).font(.system(.headline, design: .serif)).fixedSize(horizontal: false, vertical: true)
-                        Text(product.displayPrice + " / " + period)
-                            .font(.subheadline.weight(.semibold)).foregroundColor(Palette.ocean)
+                    if let product {
+                        if let period = periodDescription(product) {
+                            Text(period).font(.system(.headline, design: .serif)).fixedSize(horizontal: false, vertical: true)
+                            Text(product.displayPrice + " / " + period)
+                                .font(.subheadline.weight(.semibold)).foregroundColor(Palette.ocean)
+                        } else {
+                            Text(l.text(monthly ? "Monthly membership" : "Yearly membership"))
+                                .font(.system(.headline, design: .serif)).fixedSize(horizontal: false, vertical: true)
+                            Text(product.displayPrice)
+                                .font(.subheadline.weight(.semibold)).foregroundColor(Palette.ocean)
+                        }
                     } else {
                         Text(l.text(monthly ? "Monthly membership" : "Yearly membership"))
                             .font(.system(.headline, design: .serif)).fixedSize(horizontal: false, vertical: true)
+                        Text((monthly ? "US$9.99" : "US$99.99") + " / " + l.text(monthly ? "month" : "year"))
+                            .font(.subheadline.weight(.semibold)).foregroundColor(Palette.ocean)
+                        Text(l.text("Planned price in USD"))
+                            .font(.footnote).foregroundColor(Palette.muted)
                     }
                 }
                 Spacer(minLength: 0)

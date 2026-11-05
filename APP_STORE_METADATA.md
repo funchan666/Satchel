@@ -2,15 +2,9 @@
 
 ## Bundle ID
 
-Current: im.seex.lobo
+Configured: com.satchel.traveljournal
 
-Candidates, subject to availability and coordination with the backend and Apple Developer account:
-
-com.satchel.traveljournal
-app.satchel.journey
-com.satchel.travelnotes
-com.satchel.packingjournal
-app.journey.satchel
+The identifier must also be registered in the Apple Developer account and configured in App Store Connect and the provider backend. Availability has not been verified.
 
 ## App Name
 
@@ -36,18 +30,18 @@ Start with up to three trips, thirty photos and one travel question per day. Sat
 
 The names and descriptions below are proposed App Store Connect text. Product IDs are used by the current app. Prices and periods must be confirmed against the actual App Store Connect products and storefront before submission.
 
-Name: Satchel Weekly Membership
-
-Description: Unlimited trips photos and travel questions
-
-Product ID: coins_1.99
-
-Previously observed: 7 days, JPY 300 in the Japanese storefront. The backend identifies this product with a USD price of 1.99; the actual Apple price must be verified.
-
 Name: Satchel Monthly Membership
 
 Description: Unlimited trips photos and travel questions
 
-Product ID: conis_4.99
+Product ID: com.satchel.traveljournal.monthly
 
-Previously observed: 1 month, JPY 800 in the Japanese storefront. The backend identifies this product with a USD price of 4.99; the actual Apple price must be verified.
+Period: 1 month. Planned price: USD 9.99. The new product and its price are not yet configured or verified in App Store Connect.
+
+Name: Satchel Yearly Membership
+
+Description: Unlimited trips photos and travel questions
+
+Product ID: com.satchel.traveljournal.yearly
+
+Period: 1 year. Planned price: USD 99.99. The new product and its price are not yet configured or verified in App Store Connect.
