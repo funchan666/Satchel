@@ -474,10 +474,13 @@ private struct PortalOperation: Codable {
         var storeKitStarted = false
         do {
             paymentLog.info("B-side StoreKit product lookup started")
+            let productLookupStartedAt = Date()
             guard let product = try await Product.products(for: [productID]).first else {
+                paymentLog.notice("B-side StoreKit product unavailable; seconds=\(Date().timeIntervalSince(productLookupStartedAt), privacy: .public)")
                 await failPurchase(requestID, reason: "product_not_found")
                 return
             }
+            paymentLog.info("B-side StoreKit product lookup finished; seconds=\(Date().timeIntervalSince(productLookupStartedAt), privacy: .public)")
             let period = product.subscription.map { "\($0.subscriptionPeriod.value) \(String(describing: $0.subscriptionPeriod.unit))" } ?? "none"
             paymentLog.info("StoreKit product \(productID, privacy: .public): period \(period, privacy: .public); requested plan \(plan, privacy: .public)")
             guard let index = operations.firstIndex(where: { $0.userID == userID && $0.requestID == requestID }) else {
@@ -497,8 +500,9 @@ private struct PortalOperation: Codable {
             // The pending record is saved before creating an order, so an uncertain response never starts a second purchase.
             orderAttempted = true
             paymentLog.info("B-side order creation started")
+            let orderStartedAt = Date()
             let order = try await backend.createOrder(productID: product.id, price: NSDecimalNumber(decimal: product.price).stringValue, usdPrice: plan == "monthly" ? "999" : "9999")
-            paymentLog.info("B-side order creation succeeded")
+            paymentLog.info("B-side order creation succeeded; seconds=\(Date().timeIntervalSince(orderStartedAt), privacy: .public)")
             guard !stopped else { return }
             guard let credentials = backend.socketCredentials, credentials.userID == userID, credentials.token == token else {
                 await failPurchase(requestID, reason: "session_unavailable")
@@ -518,6 +522,7 @@ private struct PortalOperation: Codable {
             paymentLog.info("B-side StoreKit purchase started")
             let purchaseStartedAt = Date()
             let purchaseResult = try await product.purchase(options: [.appAccountToken(accountToken)])
+            paymentLog.info("B-side StoreKit purchase returned; seconds=\(Date().timeIntervalSince(purchaseStartedAt), privacy: .public)")
             guard !stopped else { return }
             switch purchaseResult {
             case .success(let result):
@@ -551,12 +556,12 @@ private struct PortalOperation: Codable {
             }
         } catch {
             guard !stopped else { return }
+            let failure = error as NSError
+            paymentLog.error("B-side purchase operation failed; orderAttempted=\(orderAttempted), appleStarted=\(storeKitStarted), domain=\(failure.domain, privacy: .public), code=\(failure.code)")
             if !orderAttempted {
                 await failPurchase(requestID, reason: "product_query_failed")
                 return
             }
-            let failure = error as NSError
-            paymentLog.error("B-side purchase operation failed; appleStarted=\(storeKitStarted), domain=\(failure.domain, privacy: .public), code=\(failure.code)")
             if !storeKitStarted {
                 // No Apple purchase was started, even if the order response was lost.
                 await failPurchase(requestID, reason: "order_creation_failed")
