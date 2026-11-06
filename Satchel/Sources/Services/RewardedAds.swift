@@ -5,9 +5,6 @@ import UserMessagingPlatform
 import OSLog
 
 @MainActor final class RewardedAds: NSObject, ObservableObject, FullScreenContentDelegate {
-    private let testAdUnit = "ca-app-pub-3940256099942544/1712485313"
-    private let testInterstitialUnit = "ca-app-pub-3940256099942544/4411468910"
-    private let testAppOpenUnit = "ca-app-pub-3940256099942544/5575463023"
     private var active = false
     var isPresentingFullScreen: Bool { active }
     private(set) var openConsentInProgress = false
@@ -16,7 +13,6 @@ import OSLog
     private var appOpenAd: AppOpenAd?
     private var rewarded = false
     private var ad: RewardedAd?
-    private var interstitial: InterstitialAd?
     private var continuation: CheckedContinuation<String, Never>?
     private var sdkStarted = false
     private let openLog = Logger(subsystem: Bundle.main.bundleIdentifier ?? "Satchel", category: "AppOpenAd")
@@ -28,7 +24,7 @@ import OSLog
         active = false
     }
 
-    func showAppOpen(from controller: UIViewController, shouldPresent: @escaping () -> Bool) async -> String {
+    func showAppOpen(from controller: UIViewController, unitID: String, shouldPresent: @escaping () -> Bool) async -> String {
         guard !active, controller.viewIfLoaded?.window != nil else {
             openLog.info("Startup ad presenter unavailable or another ad is active")
             return "ad_not_ready"
@@ -73,8 +69,8 @@ import OSLog
                 sdkStarted = true
             }
             stage = "load"
-            openLog.info("Startup test ad load started")
-            let loaded = try await AppOpenAd.load(with: testAppOpenUnit, request: Request())
+            openLog.info("Startup ad load started")
+            let loaded = try await AppOpenAd.load(with: unitID, request: Request())
             guard await waitForForeground(attempt: attempt, controller: controller, shouldPresent: shouldPresent) else {
                 cancelPendingOpen(); return "ad_not_ready"
             }
@@ -105,7 +101,8 @@ import OSLog
         return false
     }
 
-    func show(from controller: UIViewController?) async -> String {
+    func show(from controller: UIViewController?, unitID: String?) async -> String {
+        guard let unitID else { return "ad_not_configured" }
         guard !active else { return "ad_busy" }
         guard let controller else { return "ad_not_ready" }
         active = true; rewarded = false
@@ -119,7 +116,7 @@ import OSLog
                 }
                 sdkStarted = true
             }
-            let loaded = try await RewardedAd.load(with: testAdUnit, request: Request())
+            let loaded = try await RewardedAd.load(with: unitID, request: Request())
             loaded.fullScreenContentDelegate = self; ad = loaded
             return await withCheckedContinuation { continuation in
                 self.continuation = continuation
@@ -127,31 +124,9 @@ import OSLog
             }
         } catch { active = false; ad = nil; return "ad_load_failed" }
     }
-    func showInterstitial(from controller: UIViewController?) async -> String {
-        guard !active else { return "ad_busy" }
-        guard let controller else { return "ad_not_ready" }
-        active = true; rewarded = false
-        do {
-            try await ConsentInformation.shared.requestConsentInfoUpdate(with: RequestParameters())
-            try await ConsentForm.loadAndPresentIfRequired(from: controller)
-            guard ConsentInformation.shared.canRequestAds else { active = false; return "ad_not_ready" }
-            if !sdkStarted {
-                await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-                    MobileAds.shared.start { _ in continuation.resume() }
-                }
-                sdkStarted = true
-            }
-            let loaded = try await InterstitialAd.load(with: testInterstitialUnit, request: Request())
-            loaded.fullScreenContentDelegate = self; interstitial = loaded
-            return await withCheckedContinuation { continuation in
-                self.continuation = continuation
-                loaded.present(from: controller)
-            }
-        } catch { active = false; interstitial = nil; return "ad_load_failed" }
-    }
     func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
         if appOpenAd != nil { openLog.info("Startup ad dismissed") }
-        finish(interstitial != nil ? "dismissed" : (rewarded ? "rewarded" : "dismissed"))
+        finish(rewarded ? "rewarded" : "dismissed")
     }
     func adDidRecordImpression(_ ad: FullScreenPresentingAd) {
         if appOpenAd != nil { openLog.info("Startup ad impression recorded") }
@@ -164,7 +139,7 @@ import OSLog
         finish("ad_show_failed")
     }
     private func finish(_ result: String) {
-        let resultContinuation = continuation; continuation = nil; ad = nil; interstitial = nil; appOpenAd = nil; openAttempt = nil; openAdIsPresenting = false; active = false
+        let resultContinuation = continuation; continuation = nil; ad = nil; appOpenAd = nil; openAttempt = nil; openAdIsPresenting = false; active = false
         resultContinuation?.resume(returning: result)
     }
 }

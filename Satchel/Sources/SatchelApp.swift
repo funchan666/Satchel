@@ -74,6 +74,7 @@ import OSLog
             await backend.signIn()
             if backend.isSignedIn { await backend.open(language: language) }
             routeResolved = true
+            if scenePhase == .active, let adController { beginStartupAd(from: adController) }
             finishStartupIfReady()
         }
         // Give the consent update, SDK initialization and network load enough
@@ -97,10 +98,17 @@ import OSLog
     }
 
     private func beginStartupAd(from controller: UIViewController) {
-        guard showingStartup, !startupAdStarted, !startupAdResolved else { return }
+        guard showingStartup, routeResolved, !startupAdStarted, !startupAdResolved else { return }
         startupAdStarted = true
+        guard let unitID = backend.adUnitID(for: 1) else {
+            startupLog.info("Startup ad configuration unavailable")
+            startupAdResolved = true
+            startupAdFinishedAt = Date()
+            finishStartupIfReady()
+            return
+        }
         Task { @MainActor in
-            let result = await ads.showAppOpen(from: controller) {
+            let result = await ads.showAppOpen(from: controller, unitID: unitID) {
                 showingStartup && !startupAdResolved
             }
             startupLog.info("Startup ad finished: \(result, privacy: .public)")

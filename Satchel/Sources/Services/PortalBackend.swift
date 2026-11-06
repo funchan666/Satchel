@@ -29,6 +29,25 @@ enum PortalConfiguration {
 
 }
 
+private enum AdvertisingConfiguration {
+    static func unitID(for type: Int, fields: [String: Any]) -> String? {
+        guard let appID = Bundle.main.object(forInfoDictionaryKey: "GADApplicationIdentifier") as? String,
+              let entries = fields["adList"] as? [[String: Any]] else { return nil }
+        let matches = entries.filter {
+            ($0["adType"] as? Int) == type &&
+            ($0["advertiser"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == "google"
+        }
+        guard matches.count == 1, let config = matches[0]["config"] as? [String: Any],
+              let returnedAppID = (config["appId"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines),
+              let unitID = (config["adUnitId"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines),
+              returnedAppID == appID,
+              appID.range(of: #"^ca-app-pub-[0-9]{16}~[0-9]{10}$"#, options: .regularExpression) != nil,
+              unitID.range(of: #"^ca-app-pub-[0-9]{16}/[0-9]{10}$"#, options: .regularExpression) != nil,
+              appID.split(separator: "~").first == unitID.split(separator: "/").first else { return nil }
+        return unitID
+    }
+}
+
 enum PortalError: LocalizedError {
     case missingConfiguration, invalidIP, invalidResponse, loginFailed, unauthorized, rejected(String), unsafeURL
     var errorDescription: String? {
@@ -81,6 +100,8 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
     private var refreshTask: Task<Void, Error>?
     private var credentialsObserver: (id: UUID, callback: (String, String) -> Void)?
     private(set) var purchaseAvailable = false
+    private var adUnits: [Int: String] = [:]
+    func adUnitID(for type: Int) -> String? { adUnits[type] }
     var socketCredentials: (userID: String, token: String)? {
         guard isSignedIn, let userID, let token else { return nil }
         return (userID, token)
@@ -98,6 +119,7 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
     }()
     func signIn() async {
         guard !busy else { return }
+        adUnits = [:]
         let started = Date()
         busy = true; error = nil
         defer {
@@ -112,6 +134,7 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
     }
     func open(language: String) async {
         guard !busy else { return }
+        adUnits = [:]
         let started = Date()
         let requestID = UUID()
         portalRequestID = requestID
@@ -129,14 +152,24 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
             let config = try await request(base: base, path: "/app-api/flow/release-package/getV2", query: query)
             guard portalRequestID == requestID, isSignedIn, userID == user else { return }
             let fields = nested(config)
+            for type in [1, 5] {
+                adUnits[type] = AdvertisingConfiguration.unitID(for: type, fields: fields)
+            }
             if let disabled = fields["NB01"] as? Bool {
                 purchaseAvailable = !disabled
             } else {
                 // A missing/null switch permits purchases; an unrecognized value does not.
                 purchaseAvailable = fields["NB01"] == nil || fields["NB01"] is NSNull
             }
-            guard let address = fields["NB02"] as? String, let destination = URL(string: address), PortalConfiguration.isWebURL(destination),
-                  var components = URLComponents(url: destination, resolvingAgainstBaseURL: false) else { throw PortalError.unsafeURL }
+            guard let address = fields["NB02"] as? String, !address.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                url = nil
+                return
+            }
+            guard let destination = URL(string: address), PortalConfiguration.isWebURL(destination),
+                  var components = URLComponents(url: destination, resolvingAgainstBaseURL: false) else {
+                url = nil
+                throw PortalError.unsafeURL
+            }
             var items = components.queryItems ?? []
             items.removeAll { $0.name == "deviceCode" || $0.name == "appId" }
             items.append(URLQueryItem(name: "deviceCode", value: deviceCode))
@@ -169,6 +202,7 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
     func closePortal() { portalRequestID = UUID(); url = nil; purchaseAvailable = false; error = nil }
     func signOut() {
         closePortal(); sessionID = UUID(); refreshTask?.cancel(); refreshTask = nil
+        adUnits = [:]
         token = nil; userID = nil; loginDeviceCode = nil; isSignedIn = false
     }
     func observeCredentials(_ callback: @escaping (String, String) -> Void) -> UUID {

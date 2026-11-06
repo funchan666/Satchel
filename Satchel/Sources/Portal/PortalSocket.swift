@@ -318,7 +318,9 @@ private struct PortalOperation: Codable {
                 await self.purchase(requestID: requestID, plan: plan!)
             }
             else {
-                let result = action == "ad.rewarded" ? await self.ads.show(from: self.presentingController()) : await self.ads.showInterstitial(from: self.presentingController())
+                let result = action == "ad.rewarded"
+                    ? await self.ads.show(from: self.presentingController(), unitID: self.backend.adUnitID(for: 5))
+                    : "ad_not_configured"
                 guard !self.stopped else { return }
                 let status = ["rewarded", "dismissed"].contains(result) ? result : "failed"
                 self.updateOperation(requestID, status: status, completed: action == "ad.rewarded" ? result == "rewarded" : nil,
