@@ -148,7 +148,6 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
         do {
             guard let base = PortalConfiguration.baseURL, !PortalConfiguration.releaseName.isEmpty else { throw PortalError.missingConfiguration }
             guard isSignedIn, let user = userID, let deviceCode = loginDeviceCode else { throw PortalError.loginFailed }
-            guard let appID = Bundle.main.bundleIdentifier, !appID.isEmpty else { throw PortalError.missingConfiguration }
             let zone = TimeZone.current.identifier
             let query = ["platform": "ios", "name": PortalConfiguration.releaseName, "version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0", "lang": language, "userId": user, "time": zone, "input": "手机键盘"]
             let config = try await request(base: base, path: "/app-api/flow/release-package/getV2", query: query)
@@ -175,7 +174,7 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
             var items = components.queryItems ?? []
             items.removeAll { $0.name == "deviceCode" || $0.name == "appId" }
             items.append(URLQueryItem(name: "deviceCode", value: deviceCode))
-            items.append(URLQueryItem(name: "appId", value: appID))
+            items.append(URLQueryItem(name: "appId", value: PortalConfiguration.servicePackageName))
             components.queryItems = items
             guard let resolvedURL = components.url else { throw PortalError.unsafeURL }
             url = resolvedURL
