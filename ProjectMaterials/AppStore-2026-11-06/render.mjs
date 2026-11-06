@@ -7,6 +7,7 @@ const root = dirname(fileURLToPath(import.meta.url));
 const chrome = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const assets = name => pathToFileURL(resolve(root, '素材', name)).href;
 const slides = [
+  ['00-journey', 'A little more<br>room to roam.', 'PLAN YOUR JOURNEY', 'screen-home.png'],
   ['01-journal', 'Keep the moments<br>that matter.', 'YOUR TRAVEL JOURNAL', 'screen-journal.png'],
   ['02-guide', 'A thoughtful start<br>to every trip.', 'A HANDY TRAVEL GUIDE', 'screen-guide.png'],
   ['03-collection', 'A little more<br>room to roam.', 'YOUR TRAVEL COLLECTION', 'screen-collection.png'],
