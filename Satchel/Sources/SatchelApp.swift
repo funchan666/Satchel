@@ -11,6 +11,7 @@ import OSLog
     @State private var showingStartup = true
     @State private var startupStarted = false
     @State private var routeResolved = false
+    @State private var routeTimedOut = false
     @State private var portalReady = false
     @State private var startupAdStarted = false
     @State private var startupAdResolved = false
@@ -72,22 +73,45 @@ import OSLog
         startupStarted = true
         Task { @MainActor in
             await backend.signIn()
+            guard !routeTimedOut else { return }
             if backend.isSignedIn { await backend.open(language: language) }
+            guard !routeTimedOut else { return }
             routeResolved = true
             if scenePhase == .active, let adController { beginStartupAd(from: adController) }
             finishStartupIfReady()
         }
-        // Give the consent update, SDK initialization and network load enough
-        // foreground time, then skip unavailable ads when no consent flow is active.
+        // A late response must not replace A-side content after the fallback.
+        Task { @MainActor in
+            var activeSeconds = 0
+            while !routeResolved {
+                do { try await Task.sleep(nanoseconds: 1_000_000_000) } catch { return }
+                guard !routeResolved else { return }
+                if UIApplication.shared.applicationState != .active { continue }
+                activeSeconds += 1
+                guard activeSeconds >= 8 else { continue }
+                startupLog.notice("Startup configuration timed out; using local experience")
+                routeTimedOut = true
+                backend.closePortal()
+                routeResolved = true
+                startupAdResolved = true
+                startupAdFinishedAt = Date()
+                finishStartupIfReady()
+                return
+            }
+        }
+        // Consent and a presented ad can finish; only preparation is bounded.
         Task { @MainActor in
             var activeSeconds = 0
             while !startupAdResolved {
                 do { try await Task.sleep(nanoseconds: 1_000_000_000) } catch { return }
+                guard !startupAdResolved else { return }
                 if UIApplication.shared.applicationState != .active { continue }
+                guard routeResolved else { continue }
                 if ads.openConsentInProgress { activeSeconds = 0; continue }
                 if ads.openAdIsPresenting { return }
                 activeSeconds += 1
-                guard activeSeconds >= 15 else { continue }
+                let adPreparationLimit = backend.url == nil ? 5 : 15
+                guard activeSeconds >= adPreparationLimit else { continue }
                 startupLog.info("Startup ad timed out before presentation; presenter ready: \(adController != nil)")
                 ads.cancelPendingOpen()
                 startupAdResolved = true
