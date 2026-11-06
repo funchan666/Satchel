@@ -28,7 +28,7 @@ targets:
       path: Satchel/Info.plist
       properties:
         UILaunchStoryboardName: LaunchScreen
-        GADApplicationIdentifier: ca-app-pub-3940256099942544~1458002511
+        GADApplicationIdentifier: ca-app-pub-4423220037289714~5547580307
         SKAdNetworkItems:
           - SKAdNetworkIdentifier: cstr6suwn9.skadnetwork
     dependencies:
@@ -38,7 +38,7 @@ targets:
         product: GoogleUserMessagingPlatform
     settings:
       base:
-        INFOPLIST_KEY_GADApplicationIdentifier: ca-app-pub-3940256099942544~1458002511
+        INFOPLIST_KEY_GADApplicationIdentifier: ca-app-pub-4423220037289714~5547580307
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: Satchel
         INFOPLIST_KEY_NSCameraUsageDescription: 'Satchel uses the camera to add photos to your travel journal and packing notes.'

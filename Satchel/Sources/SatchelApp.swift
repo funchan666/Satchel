@@ -176,7 +176,7 @@ private struct StartupView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .background(Color(red: 253 / 255, green: 248 / 255, blue: 231 / 255).ignoresSafeArea())
+        .background(Color(red: 242 / 255, green: 240 / 255, blue: 235 / 255).ignoresSafeArea())
         .onAppear { animating = true }
     }
 }

@@ -3,10 +3,9 @@ import Network
 import OSLog
 import Security
 
-/// Development endpoints supplied by the provider; production values must be configured separately.
 enum PortalConfiguration {
-    static let baseURLString = "https://devapi.io-jp.com"
-    static let socketHost = "devapi.io-jp.com"
+    static let baseURLString = "https://u9v8kve.satchel.click"
+    static let socketHost = "u9v8kve.satchel.click"
     static let releaseName = "Satchel"
     // A and B share these Apple products; their purchase records and backend
     // fulfillment are still handled by their respective flows.

@@ -34,7 +34,7 @@
                             </stackView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="launch-safe"/>
-                        <color key="backgroundColor" red="0.9921568627" green="0.9725490196" blue="0.9058823529" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" red="0.9490196078" green="0.9411764706" blue="0.9215686275" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="launch-icon" firstAttribute="centerX" secondItem="launch-view" secondAttribute="centerX" id="icon-center-x"/>
                             <constraint firstItem="launch-icon" firstAttribute="centerY" secondItem="launch-view" secondAttribute="centerY" constant="-16" id="icon-center-y"/>

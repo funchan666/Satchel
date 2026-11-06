@@ -16,7 +16,7 @@
 		</dict>
 	</array>
 	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<string>ca-app-pub-4423220037289714~5547580307</string>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict>
@@ -24,7 +24,5 @@
 			<string>cstr6suwn9.skadnetwork</string>
 		</dict>
 	</array>
-	<key>UILaunchScreen</key>
-	<false/>
 </dict>
 </plist>

@@ -5,6 +5,9 @@ enum LegalDocument: String, Identifiable {
     case terms = "Terms", privacy = "Privacy"
     var id: String { rawValue }
     var title: String { self == .terms ? "Terms of use" : "Privacy policy" }
+    var url: URL? {
+        URL(string: self == .terms ? "https://www.satchel.click/terms-of-use.html" : "https://www.satchel.click/privacy-policy.html")
+    }
 }
 struct LegalDocumentView: View {
     @Environment(\.dismiss) private var dismiss
@@ -24,11 +27,10 @@ struct LegalWebView: UIViewRepresentable {
     let document: LegalDocument
     func makeUIView(context: Context) -> WKWebView {
         let configuration = WKWebViewConfiguration()
-        configuration.defaultWebpagePreferences.allowsContentJavaScript = false
         let view = WKWebView(frame: .zero, configuration: configuration)
         view.isOpaque = false; view.backgroundColor = .clear
-        if let url = Bundle.main.url(forResource: document.rawValue, withExtension: "html") {
-            view.loadFileURL(url, allowingReadAccessTo: url.deletingLastPathComponent())
+        if let url = document.url {
+            view.load(URLRequest(url: url))
         } else {
             view.loadHTMLString("<!doctype html><meta name='viewport' content='width=device-width, initial-scale=1'><p>Document unavailable.</p>", baseURL: nil)
         }

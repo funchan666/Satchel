@@ -6,6 +6,16 @@ Configured: com.satchel.traveljournal
 
 The identifier must also be registered in the Apple Developer account and configured in App Store Connect and the provider backend. Availability has not been verified.
 
+## Public Website and Legal Documents
+
+Website: https://www.satchel.click/
+
+Privacy policy: https://www.satchel.click/privacy-policy.html
+
+Terms of use: https://www.satchel.click/terms-of-use.html
+
+The supplied #privacy and #terms fragments do not identify sections on the current homepage; the website links to these dedicated pages instead. Review the published documents against the actual app, advertising, backend and subscription practices before submission.
+
 ## App Name
 
 Satchel Travel Journal
