@@ -7,6 +7,8 @@ enum PortalConfiguration {
     static let baseURLString = "https://u9v8kve.satchel.click"
     static let socketHost = "u9v8kve.satchel.click"
     static let releaseName = "Satchel"
+    // Backend registration is independent of the installed app's bundle identifier.
+    static let servicePackageName = "com.satchel.traveljournal"
     // A and B share these Apple products; their purchase records and backend
     // fulfillment are still handled by their respective flows.
     static let monthlyProductID = SubscriptionProductIDs.monthly
@@ -186,7 +188,7 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
     func createOrder(productID: String, price: String, usdPrice: String) async throws -> String {
         guard let base = PortalConfiguration.baseURL, let token, isSignedIn else { throw PortalError.loginFailed }
         let body: [String: Any] = ["rightsName": productID, "price": price, "usdPrice": usdPrice,
-            "packageName": Bundle.main.bundleIdentifier ?? "", "versionCode": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0",
+            "packageName": PortalConfiguration.servicePackageName, "versionCode": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0",
             "payType": "1", "source": "ios"]
         let result = try await request(base: base, path: "/app-api/flow/rights-order/buy", method: "POST", body: body, bearer: token)
         if let order = result as? String, !order.isEmpty { return order }
@@ -222,7 +224,7 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate {
         let ip = (try? await publicIP()) ?? ""
         startupLog.info("Public IP lookup finished; available=\(!ip.isEmpty), seconds=\(Date().timeIntervalSince(started), privacy: .public)")
         let deviceCode = try DeviceIdentity.get()
-        let body = ["deviceCode": deviceCode, "uniqueId": ip, "source": Bundle.main.bundleIdentifier ?? ""]
+        let body = ["deviceCode": deviceCode, "uniqueId": ip, "source": PortalConfiguration.servicePackageName]
         let fields = nested(try await request(base: base, path: "/app-api/member/auth/app_tourist_login", method: "POST", body: body))
         guard let access = string(fields, keys: ["accessToken", "access_token", "token"]), !access.isEmpty,
               let user = string(fields, keys: ["userId", "user_id"]), !user.isEmpty else { throw PortalError.loginFailed }
