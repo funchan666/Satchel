@@ -1,0 +1,66 @@
+workflows:
+  satchel-ios-app-store:
+    name: Satchel iOS App Store
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+
+    integrations:
+      app_store_connect: Satchel
+
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.satchel.traveljournal
+      vars:
+        BUNDLE_ID: "com.satchel.traveljournal"
+        XCODE_PROJECT: "Satchel.xcodeproj"
+        XCODE_SCHEME: "Satchel"
+        APP_STORE_APPLE_ID: "6832414222"
+        APP_VERSION: "1.0.0"
+      xcode: "27.1"
+
+    scripts:
+      - name: Verify project configuration
+        script: |
+          set -eu
+          cd "$CM_BUILD_DIR"
+          test -d "$XCODE_PROJECT"
+          test -f "$XCODE_PROJECT/xcshareddata/xcschemes/$XCODE_SCHEME.xcscheme"
+          grep -Fq "PRODUCT_BUNDLE_IDENTIFIER = $BUNDLE_ID;" "$XCODE_PROJECT/project.pbxproj"
+
+      - name: Set up App Store signing
+        script: |
+          set -eu
+          cd "$CM_BUILD_DIR"
+          xcode-project use-profiles
+
+      - name: Build signed IPA
+        script: |
+          set -eu
+          cd "$CM_BUILD_DIR"
+          LATEST_BUILD_NUMBER="$(app-store-connect get-latest-build-number --all-versions "$APP_STORE_APPLE_ID")"
+          if [ -z "$LATEST_BUILD_NUMBER" ]; then
+            NEXT_BUILD_NUMBER=1
+          elif printf '%s\n' "$LATEST_BUILD_NUMBER" | grep -Eq '^[0-9]+$'; then
+            NEXT_BUILD_NUMBER=$((LATEST_BUILD_NUMBER + 1))
+          else
+            echo "App Store Connect returned an unsupported build number: $LATEST_BUILD_NUMBER" >&2
+            exit 1
+          fi
+          echo "Building version $APP_VERSION ($NEXT_BUILD_NUMBER)"
+          xcode-project build-ipa \
+            --project "$CM_BUILD_DIR/$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME" \
+            --config Release \
+            --archive-xcargs "COMPILER_INDEX_STORE_ENABLE=NO MARKETING_VERSION=$APP_VERSION CURRENT_PROJECT_VERSION=$NEXT_BUILD_NUMBER"
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: false
+        submit_to_app_store: false
