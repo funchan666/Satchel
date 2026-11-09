@@ -10,11 +10,11 @@ The identifier must also be registered in the Apple Developer account and config
 
 Website: https://www.satchel.click/
 
-Privacy policy: https://www.satchel.click/privacy-policy.html
+Privacy policy: https://www.satchel.click/#privacy
 
-Terms of use: https://www.satchel.click/terms-of-use.html
+Terms of use: https://www.satchel.click/#terms
 
-The supplied #privacy and #terms fragments do not identify sections on the current homepage; the website links to these dedicated pages instead. Review the published documents against the actual app, advertising, backend and subscription practices before submission.
+The supplied #privacy and #terms fragments must resolve to their respective documents on the published website. Review the published documents against the actual app, advertising, backend and subscription practices before submission.
 
 ## App Name
 
@@ -35,6 +35,12 @@ Find your way back to a memory with search, or mark favorite trips to keep them 
 Your travel journal is stored on your device. Export your trips, lists and photos as a file and share it with the people you choose using apps on your device.
 
 Start with up to three trips, thirty photos and one travel question per day. Satchel Membership gives you more room for trips and photos, along with more travel questions. Subscriptions renew automatically and can be managed in your Apple account.
+
+Terms of Service: https://www.satchel.click/#terms
+
+Privacy Policy: https://www.satchel.click/#privacy
+
+Apple Standard End User License Agreement: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
 
 ## In App Purchases
 

@@ -6,7 +6,7 @@ enum LegalDocument: String, Identifiable {
     var id: String { rawValue }
     var title: String { self == .terms ? "Terms of use" : "Privacy policy" }
     var url: URL? {
-        URL(string: self == .terms ? "https://www.satchel.click/terms-of-use.html" : "https://www.satchel.click/privacy-policy.html")
+        URL(string: self == .terms ? "https://www.satchel.click/#terms" : "https://www.satchel.click/#privacy")
     }
 }
 struct LegalDocumentView: View {
